@@ -15,7 +15,8 @@ namespace MEMORY.Models
          "TrustServerCertificate=False;" +
          "Connection Timeout=30;";
         using var sqlConnection = new SqlConnection(cs);
-        //hårdkodat
+        
+        //hårdkodat TA BORT SENARE!!!
         String sqlstring = "INSERT INTO Users (UserName, Email, Passwords) VALUES ('UserName', 'Email', 'Password')";
         SqlCommand sqlCommand = new SqlCommand(sqlstring, sqlConnection);
         try
