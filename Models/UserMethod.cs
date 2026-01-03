@@ -16,7 +16,7 @@ namespace MEMORY.Models
          "Connection Timeout=30;";
         using var sqlConnection = new SqlConnection(cs);
         //hårdkodat
-        String sqlstring = "INSERT INTO Users (UserName, Email, Passwords) VALUES ('UserName', 'Email', 'Passwords')";
+        String sqlstring = "INSERT INTO Users (UserName, Email, Passwords) VALUES ('UserName', 'Email', 'Password')";
         SqlCommand sqlCommand = new SqlCommand(sqlstring, sqlConnection);
         try
         {
