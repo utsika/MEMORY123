@@ -7,6 +7,7 @@
         public bool IsItAMatch(RoundDetail roundDetail)
         {
             return roundDetail.Card1.CardName == roundDetail.Card2.CardName;
+            //om IsItAMatch är true så är det en match -> uppdatera kortens IsMatched till true
         }
 
     }

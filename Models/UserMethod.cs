@@ -39,7 +39,7 @@ namespace MEMORY.Models
             sqlConnection.Close();
         }
     }
-    
+        //DELETE USER METHOD TO DO LATER
         //konstruktor
         public UserMethod()
         { }

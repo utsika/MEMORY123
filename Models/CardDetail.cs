@@ -9,6 +9,7 @@
 
         public int Y { get; set; }
         public Boolean IsMatched { get; set; }
+        public Boolean IsFlipped { get; set; }
 
         //GameID foreign key hur?????????????
 

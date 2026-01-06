@@ -2,5 +2,11 @@
 {
     public class GameMethod
     {
+        public GameDetail CreateGame()
+        {
+
+        }
     }
+
+   
 }
