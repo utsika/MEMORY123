@@ -7,8 +7,9 @@
 
         public CardDetail Card1 { get; set; }
         public CardDetail Card2 { get; set; }
-        public int CardID1 { get; set; }
-        public int CardID2 { get; set; }
+        //inte ha dessa!!!!!!!!!!
+        //public int CardID1 { get; set; }
+        //public int CardID2 { get; set; }
 
         public Boolean WasItAMatch { get; set; }
         

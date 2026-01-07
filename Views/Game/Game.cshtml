@@ -1,0 +1,12 @@
+﻿
+
+@model List<string>
+<p> Numer of cards </p>
+<ul>
+    @foreach (string cards in Model)
+    {
+        <li>@cards</li>
+    }
+</ul>
+
+<p>@ViewBag.noofCards</p>

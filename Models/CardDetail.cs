@@ -5,9 +5,8 @@
         //publika egenskaper
         public int CardID { get; set; }
         public string CardName { get; set; }
-        public int X { get; set; }
+        public int Index { get; set; } //1-16
 
-        public int Y { get; set; }
         public Boolean IsMatched { get; set; }
         public Boolean IsFlipped { get; set; }
 
@@ -15,6 +14,8 @@
 
         //konstruktor
         public CardDetail()
-        { }
+        {
+            
+        }
     }
 }

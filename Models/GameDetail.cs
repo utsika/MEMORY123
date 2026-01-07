@@ -11,7 +11,9 @@
         public int GameID { get; set; }
         public DateTime  CreatedWhen { get; set; }
 
-                
+        public int CurrentPlayer { get; set; }
+
+
         //konstruktor
         public GameDetail()
         { }
