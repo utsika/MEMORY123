@@ -7,9 +7,9 @@ namespace MEMORY.Controllers
     public class GameController : Controller
     {
 
-        private GameMethod game = new GameMethod();
-        private RoundMethod roundMethod = new RoundMethod();
-        private CardMethod cardMethod = new CardMethod();
+        private Game game = new Game();
+        private Round round = new Round();
+        private Card card = new Card();
         public IActionResult Game()
         {
             // ish så som det kan se ut
@@ -37,20 +37,20 @@ namespace MEMORY.Controllers
             ViewBag.noofCards = i;
 
             return View(cards);
-
         }
+
         [HttpPost]
-        public IActionResult SelectCard(int index)
+        public IActionResult SelectCard(Card card)
         {
-            
-            if (roundMethod.IsFirstCard())
+
+            if (round.IsFirstCard())
             {
-                roundMethod.SetCard1(card);
+                round.SetCard1(card);
             }
             else
             {
-                roundMethod.SetCard2(card);
-                if (roundMethod.IsItAMatch())
+                round.SetCard2(card);
+                if (round.IsItAMatch())
                 {
                     // Hantera match
                     ViewBag.Message = "It's a match!";
@@ -62,12 +62,11 @@ namespace MEMORY.Controllers
                     ViewBag.Message = "Not a match. Next player's turn.";
                 }
 
-                roundMethod.ResetRound();
+                round.ResetRound();
             }
             // vad vill vi visa????
             // vill visa listan över våra kort, väntar med detta tills vi har lagt in korten
             return View();
-            
         }
 
 

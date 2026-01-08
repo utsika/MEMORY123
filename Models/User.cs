@@ -1,10 +1,16 @@
 ﻿using Microsoft.Data.SqlClient;
 namespace MEMORY.Models
 {
-    public class UserMethod
+    public class User
     {
-    //publika metoder
-    public int InsertUser(UserDetail userDetail, out string errorMessage)
+        //publika egenskaper
+        public int ID { get; set; }
+        public string UserName { get; set; }
+        public string Email { get; set; }
+        public string Passwords { get; set; }
+
+        //publika metoder
+        public int InsertUser(UserDetail userDetail, out string errorMessage)
     {
         //Connection string to the database
         var cs = "Server=tcp:memorydatabasteknik.database.windows.net,1433;" +
@@ -41,7 +47,7 @@ namespace MEMORY.Models
     }
         //DELETE USER METHOD TO DO LATER
         //konstruktor
-        public UserMethod()
+        public User()
         { }
     }
 }

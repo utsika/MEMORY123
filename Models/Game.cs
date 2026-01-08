@@ -3,10 +3,22 @@
 namespace MEMORY.Models
 
 {
-    public class GameMethod
+    public enum GameState
     {
-       
-    public CardDetail GetCardByIndex(int gameID, int index)
+        InProgress,
+        Finished
+    }
+    public class Game
+    {
+        //publika egenskaper
+        public int GameID { get; set; }
+        public DateTime CreatedWhen { get; set; }
+
+        public int CurrentPlayer { get; set; }
+
+        //metoder
+
+        public Card GetCardByIndex(int gameID, int index)
         {
             //Connection string to the database
             var cs = "Server=tcp:memorydatabasteknik.database.windows.net,1433;" +
@@ -33,19 +45,20 @@ namespace MEMORY.Models
                 return null;
 
             //returns the retrieved carddetails
-            return new CardDetail
+            return new Card
             {
                 CardID = (int)reader["CardID"],
                 CardName = reader["CardName"].ToString()
             };
         }
 
-
-
-        private void SwitchPlayer(GameDetail gameDetail)
+        private void SwitchPlayer(Game game)
         {
-            gameDetail.CurrentPlayer = gameDetail.CurrentPlayer == 1 ? 2 : 1;
+            game.CurrentPlayer = game.CurrentPlayer == 1 ? 2 : 1;
         }
+
+        public Game()
+        {  }
     }
 
    

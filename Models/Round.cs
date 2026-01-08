@@ -1,9 +1,22 @@
 ﻿namespace MEMORY.Models
 {
-    public class RoundMethod
+    public class Round
     {
-        public CardDetail card1;
-        public CardDetail card2;
+
+        //publika egenskaper
+        public int RoundID { get; set; }
+
+        public Card card1 { get; set; }
+        public Card card2 { get; set; }
+
+        //inte ha dessa!!!!!!!!!!
+        //public int CardID1 { get; set; }
+        //public int CardID2 { get; set; }
+
+        public Boolean WasItAMatch { get; set; }
+
+        //GameID, UserID, CardID1, CardID2 foreign keys hur?????????????
+        
 
         /*
          * IsFirstCard() == true -> Card1
@@ -16,12 +29,12 @@
             return card1 == null;
         }      
         
-        public void SetCard1(CardDetail card)
+        public void SetCard1(Card card)
         {
             card1 = card;
         }
 
-        public void SetCard2(CardDetail card)
+        public void SetCard2(Card card)
         {
             card2 = card;
         }
@@ -52,12 +65,12 @@
             return match;
         }       
 
-        public CardDetail GetCard1()
+        public Card GetCard1()
         {
             return card1;
         }
 
-        public CardDetail GetCard2()
+        public Card GetCard2()
         {
             return card2;
         }
@@ -76,6 +89,9 @@
         //    return roundDetail.Card1.CardName == roundDetail.Card2.CardName;
         //    //om IsItAMatch är true så är det en match -> uppdatera kortens IsMatched till true
         //}
+
+        public Round()
+        { }
     }
 
 }
