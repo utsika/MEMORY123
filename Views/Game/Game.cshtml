@@ -1,13 +1,24 @@
 ﻿
 
-@model List<string>
-<p> Numer of cards </p>
+@model List<Card>
+<p> Number of cards </p>
 <ul>
-    @foreach (string cards in Model)
+    @foreach (Card card in Model)
     {
-        <li><a href ="länk"> @cards</a> </li>
+        if(card.IsFlipped)
+        {
+            <p>är flippat</p>
+        }
+        else
+        {
+            <!--kolla att det är rätt spelare, rätt spelares tur att spela-->
+
+
+            @Html.ActionLink(card.Index.ToString(), "SelectCard", new { index = card, gameID = card.gameID })
+        }
     }
 </ul>
+
 
 <p>@ViewBag.noofCards</p>
 

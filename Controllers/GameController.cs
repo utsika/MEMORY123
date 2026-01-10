@@ -1,5 +1,6 @@
 ﻿using MEMORY.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Xml.Linq;
 
 namespace MEMORY.Controllers
@@ -7,68 +8,75 @@ namespace MEMORY.Controllers
     public class GameController : Controller
     {
 
-        private Game game = new Game();
-        private Round round = new Round();
-        private Card card = new Card();
-        public IActionResult Game()
+              
+        public IActionResult CreateGame ()
         {
-            // ish så som det kan se ut
-            // detta ska komma från databasen sen
-            // hämtar kort från biblioteket
-            // vet inte hur?????
-            List<string> cards = new List<string>
-            {
-                "Card1",
-                "Card2",
-                "Card3",
-                "Card4",
-                "Card5",
-                "Card6",
-                "Card7",
-                "Card8",
-                "Card9",
-                "Card10",
-                "Card11",
-                "Card12"
-            };
+            Game game = new Game();
 
-            // prints number of cards
-            int i = cards.Count;
-            ViewBag.noofCards = i;
+            //slumpa fram rumid
+            game.RoomCode = GenerateRoomID();
+            game.AmountOfPairs = 0;
+            game.Player1 = 1; //när vi fixat inloggning, sätt till inloggad användare
+            game.Player2 = null;
+            game.CreatedWhen = DateTime.Now;
+
+            //skapa alla kort
+            
+            //duplicera korten för att få par
+            List<Card> cards = new List<Card>();
+            for(int i = 0; i < cards.Count; i++)
+            {
+                cards.Add(new Card(cards[i]));
+            }
+
+
+
+            //slumpa kortens positioner
+            cards = cards.OrderBy(cards => Random.Shared.Next()).ToList();
+
+            //spara spelet i databasen
+            DatabaseMethods dbm = new DatabaseMethods();
+            dbm.InsertGame(game);
+
+            //spara korten i databasen
+            dbm.InsertCardList(cards, dbm.GetGameFromRoomCode(game.RoomCode).GameID);
+
+
+
+            //redirecta till Game action
+            return RedirectToAction("Game", {"RoomCode": game.RoomCode}); //objekt med roomcode, kolla upp
+        }
+        public IActionResult Game(string roomCode)
+        {
+            DatabaseMethods dbm = new DatabaseMethods();
+            Game game = dbm.GetGameFromRoomCode(roomCode);
+
+            //hämta korten från databasen
+            List<Card> cards = dbm.GetCardsFromGameID(game.GameID);
 
             return View(cards);
         }
 
+       
+
         [HttpPost]
-        public IActionResult SelectCard(Card card)
+        public IActionResult SelectCard(int index, int gameID)
         {
+            DatabaseMethods dbm = new DatabaseMethods();
+            dbm.SelectCard(index, gameID);
 
-            if (round.IsFirstCard())
-            {
-                round.SetCard1(card);
-            }
-            else
-            {
-                round.SetCard2(card);
-                if (round.IsItAMatch())
-                {
-                    // Hantera match
-                    ViewBag.Message = "It's a match!";
+            
+            return RedirectToAction("Game", new { roomCode = dbm.GetGameFromRoomCode(gameID).RoomID });
 
-                }
-                else
-                {
-                    // Hantera icke-match
-                    ViewBag.Message = "Not a match. Next player's turn.";
-                }
-
-                round.ResetRound();
-            }
-            // vad vill vi visa????
-            // vill visa listan över våra kort, väntar med detta tills vi har lagt in korten
-            return View();
         }
 
-
+        private string GenerateRoomID()
+        {
+            // Generate a random 6-character alphanumeric string
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var random = new Random();
+            return new string(Enumerable.Repeat(chars, 6)
+              .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
     }
 }

@@ -14,6 +14,15 @@
         public Boolean IsMatched { get; set; }
         public Boolean IsFlipped { get; set; }
 
+        public Card(Card card)
+        {
+            this.CardID = card.CardID;
+            this.CardName = card.CardName;
+            this.Index = card.Index;
+            this.IsMatched = card.IsMatched;
+            this.IsFlipped = card.IsFlipped;
+        }
+
         //Flips a card
         public void Flip(Card card)
         {
