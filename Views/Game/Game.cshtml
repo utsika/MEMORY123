@@ -12,9 +12,7 @@
         else
         {
             <!--kolla att det är rätt spelare, rätt spelares tur att spela-->
-
-
-            @Html.ActionLink(card.Index.ToString(), "SelectCard", new { index = card, gameID = card.gameID })
+            @Html.ActionLink(card.Index.ToString(), "SelectCard", new { gameID = card.GameID, index = card.Index })
         }
     }
 </ul>
@@ -23,3 +21,10 @@
 <p>@ViewBag.noofCards</p>
 
 <!-- generera interaktionspunkten(länkar, href) -->
+
+
+<!--if(card.IsMatched)
+    {
+        ska inte gå att klicka på i <a href="#"></a>
+    }
+-->

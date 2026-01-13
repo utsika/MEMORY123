@@ -6,8 +6,8 @@
         //publika egenskaper
         public int RoundID { get; set; }
 
-        public Card card1 { get; set; }
-        public Card card2 { get; set; }
+        public Card? card1 { get; set; }
+        public Card? card2 { get; set; }
 
         //inte ha dessa!!!!!!!!!!
         //public int CardID1 { get; set; }
@@ -53,6 +53,8 @@
                 card2.IsMatched = true;
                 card1.IsFlipped = true;
                 card2.IsFlipped = true;
+                
+                //AmountOfPairs ++
             }
             else
             {
@@ -65,15 +67,15 @@
             return match;
         }       
 
-        public Card GetCard1()
-        {
-            return card1;
-        }
+        //public Card GetCard1()
+        //{
+        //    return card1;
+        //}
 
-        public Card GetCard2()
-        {
-            return card2;
-        }
+        //public Card GetCard2()
+        //{
+        //    return card2;
+        //}
 
         //When done with the round, reset the stored cards
         public void ResetRound()
