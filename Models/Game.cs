@@ -6,7 +6,8 @@ namespace MEMORY.Models
     public enum GameState
     {
         InProgress,
-        Finished
+        Finished,
+        Pending
     }
     public class Game
     {
@@ -25,10 +26,7 @@ namespace MEMORY.Models
 
         //metoder
 
-        private void SwitchPlayer(Game game)
-        {
-            game.CurrentPlayer = game.CurrentPlayer == 1 ? 2 : 1;
-        }
+       
 
         public Game()
         {  }

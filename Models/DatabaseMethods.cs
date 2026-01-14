@@ -1,5 +1,7 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
 using System;
+using System.Data;
 using System.Reflection;
 
 namespace MEMORY.Models
@@ -48,21 +50,30 @@ namespace MEMORY.Models
             //fixa i databas så allt stämmer överens!!!!
             //lägg in alla attribut till Game!!!
             using SqlCommand cmd = new SqlCommand(
-             @"INSERT INTO Game VALUES ()", sqlConnection);
+             @"INSERT INTO Game
+      (CreatedWhen, Player1, Player2, CurrentPlayer, RoomCode, State, AmountOfPairs, Winner)
+      VALUES
+      (@createdWhen, @player1, @player2, @currentPlayer, @roomCode, @state, @amountOfPairs, @winner)",
+             sqlConnection);
 
             //sets the parameters for the SQL command
             //detta gäller för alla attribut i Game klassen
             cmd.Parameters.AddWithValue("@gameID", game.GameID);
-            cmd.Parameters.AddWithValue("@createdWhen", game.CreatedWhen);
-            cmd.Parameters.AddWithValue("@player1", game.Player1);
-            cmd.Parameters.AddWithValue("@player2", game.Player2);
-            cmd.Parameters.AddWithValue("@currentPlayer", game.CurrentPlayer);
-            cmd.Parameters.AddWithValue("@roomCode", game.RoomCode);
-            cmd.Parameters.AddWithValue("@state", game.State);
-            cmd.Parameters.AddWithValue("@amountOfPairs", game.AmountOfPairs);
-            cmd.Parameters.AddWithValue("@winner", game.Winner);
+            cmd.Parameters.Add("@createdWhen", SqlDbType.DateTime).Value = game.CreatedWhen;
+            cmd.Parameters.Add("@player1", SqlDbType.Int).Value = game.Player1;
+            cmd.Parameters.Add("@player2", SqlDbType.Int).Value = (object)game.Player2 ?? DBNull.Value;
+            cmd.Parameters.Add("@currentPlayer", SqlDbType.Int).Value = (object)game.CurrentPlayer ?? DBNull.Value;
+            cmd.Parameters.Add("@roomCode", SqlDbType.NVarChar, 50).Value = (object)game.RoomCode ?? DBNull.Value;
+            cmd.Parameters.Add("@state", SqlDbType.Int).Value = (int)game.State;
+            cmd.Parameters.Add("@amountOfPairs", SqlDbType.Int).Value = game.AmountOfPairs;
+            cmd.Parameters.Add("@winner", SqlDbType.Int).Value = (object)game.Winner ?? DBNull.Value;
 
-            ExecuteSQLConnection(sqlConnection, cmd);
+            int rows = ExecuteNonQuery(sqlConnection, cmd);
+            if (rows != 1)
+            {
+                // Hantera fel
+                throw new Exception("Failed to insert game");
+            }
         }
 
 
@@ -79,14 +90,23 @@ namespace MEMORY.Models
                 SqlConnection sqlConnection = CreateSQLConnection();
 
                 using SqlCommand cmd = new SqlCommand(
-                 @"INSERT INTO GameCard VALUES ())", sqlConnection);
+                 @"INSERT INTO GameCard
+      (CardName, [Index], IsMatched)
+      VALUES
+      (@cardName, @index, @isMatched)",
+                 sqlConnection);
 
                 cmd.Parameters.AddWithValue("@gameID", gameID);
                 cmd.Parameters.AddWithValue("@cardName", card.CardName);
                 cmd.Parameters.AddWithValue("@index", card.Index);
                 cmd.Parameters.AddWithValue("@isMatched", card.IsMatched);
 
-                ExecuteSQLConnection(sqlConnection, cmd);
+                int rows = ExecuteNonQuery(sqlConnection, cmd);
+                if (rows != 1)
+                {
+                    // Hantera fel
+                    throw new Exception("Failed to insert cards");
+                }
 
             }
         }
@@ -98,29 +118,31 @@ namespace MEMORY.Models
         /// <returns>The game connected to the roomCode</returns>
         public Game GetGameFromRoomCode(string roomCode)
         {
-            Game game = new Game();
+            //Game game = new Game();
             SqlConnection sqlConnection = CreateSQLConnection();
 
             //fixa i databas så allt stämmer överens!!!!
             using SqlCommand cmd = new SqlCommand(
-             @"SELECT GameID FROM Game 
-             WHERE RoomCode = @roomCode", sqlConnection);
-
-            //sets the parameters for the SQL command
-            cmd.Parameters.AddWithValue("@roomCode", roomCode);
+             @"SELECT * FROM Game WHERE RoomCode = @roomCode", sqlConnection);
+            cmd.Parameters.Add("@roomCode", SqlDbType.NVarChar, 50).Value = (object)roomCode ?? DBNull.Value;
                     
-            using SqlDataReader reader = ExecuteSQLConnection(sqlConnection, cmd);
+            using SqlDataReader reader = ExecuteReader(sqlConnection, cmd);
+
             if (!reader.Read())
-                return game;
+                return null;
+
+            Game game = new Game();
 
             //fylla game objektet med data från databasen
             game.GameID = (int)reader["GameID"];
             game.CreatedWhen = (DateTime)reader["CreatedWhen"];
             game.Player1 = (int)reader["Player1"];
-            game.Player2 = (int)reader["Player2"];
+            game.Player2 = reader["Player2"] as int?;
             game.CurrentPlayer = (int)reader["CurrentPlayer"];
             game.RoomCode = reader["RoomCode"].ToString();
-            game.State = (GameState)reader["State"];
+            //game.State = (GameState)reader["State"];
+            game.State = (GameState)Enum.Parse(typeof(GameState), reader["State"].ToString());
+
             game.AmountOfPairs = (int)reader["AmountOfPairs"];
             game.Winner = reader["Winner"] as int?;
 
@@ -149,9 +171,9 @@ namespace MEMORY.Models
             //sets the parameters for the SQL command
             cmd.Parameters.AddWithValue("@gameID", gameID);
 
-            using SqlDataReader reader = ExecuteSQLConnection(sqlConnection, cmd);
-            if (!reader.Read())
-                return cards;
+            using SqlDataReader reader = ExecuteReader(sqlConnection, cmd);
+            //if (!reader.Read())
+            //    return cards;
 
             while (reader.Read())
             {
@@ -161,7 +183,9 @@ namespace MEMORY.Models
                 card.Index = (int)reader["Index"];
                 card.IsMatched = (bool)reader["IsMatched"];
                 card.IsFlipped = (bool)reader["IsFlipped"];
-                card.PlayerMatchedTo = reader["PlayerMatchedTo"] as int?;
+                //card.PlayerMatchedTo = reader["PlayerMatchedTo"] as int?;
+                card.PlayerMatchedTo = reader["PlayerMatchedTo"] == DBNull.Value ? (int?)null : Convert.ToInt32(reader["PlayerMatchedTo"]);
+
 
                 cards.Add(card);
             }
@@ -203,7 +227,7 @@ namespace MEMORY.Models
             //sets the parameters for the SQL command
             cmd.Parameters.AddWithValue("@gameID", gameID);
 
-            using SqlDataReader reader = ExecuteSQLConnection(sqlConnection, cmd);
+            using SqlDataReader reader = ExecuteReader(sqlConnection, cmd);
             if (!reader.Read())
                 return game;
 
@@ -243,7 +267,7 @@ namespace MEMORY.Models
             //sets the parameters for the SQL command
             cmd.Parameters.AddWithValue("@gameID", gameID);
 
-            using SqlDataReader reader = ExecuteSQLConnection(sqlConnection, cmd);
+            using SqlDataReader reader = ExecuteReader(sqlConnection, cmd);
 
             if (!reader.Read())
                 return round;
@@ -280,8 +304,12 @@ namespace MEMORY.Models
                 cmd.Parameters.AddWithValue("@player2", game.Player2);
                 cmd.Parameters.AddWithValue("@gameID", game.GameID);
 
-                using SqlDataReader reader = ExecuteSQLConnection(sqlConnection, cmd);
-
+                int rows = ExecuteNonQuery(sqlConnection, cmd);
+                if (rows != 1)
+                {
+                    // Hantera fel, t.ex. kasta ett undantag eller logga
+                    throw new Exception("Failed to execute the SQL command");
+                }
                 //BEHÖVS DENNA?????
                 //game.CurrentPlayer = game.Player2;
             }
@@ -299,7 +327,12 @@ namespace MEMORY.Models
                 cmd.Parameters.AddWithValue("@player1", game.Player1);
                 cmd.Parameters.AddWithValue("@gameID", game.GameID);
 
-                using SqlDataReader reader = ExecuteSQLConnection(sqlConnection, cmd);
+                int rows = ExecuteNonQuery(sqlConnection, cmd);
+                if (rows != 1)
+                {
+                    // Hantera fel, t.ex. kasta ett undantag eller logga
+                    throw new Exception("Failed to execute the SQL command");
+                }
             }
         }
 
@@ -321,7 +354,12 @@ namespace MEMORY.Models
             cmd.Parameters.AddWithValue("@cardID1", card1.CardID);
             cmd.Parameters.AddWithValue("@cardID2", card2.CardID);
 
-            using SqlDataReader reader = ExecuteSQLConnection(sqlConnection, cmd);
+            int rows = ExecuteNonQuery(sqlConnection, cmd);
+            if (rows != 1)
+            {
+                // Hantera fel, t.ex. kasta ett undantag eller logga
+                throw new Exception("Failed to execute the SQL command");
+            }
         }
 
         /// <summary>
@@ -343,7 +381,12 @@ namespace MEMORY.Models
             cmd.Parameters.AddWithValue("@cardID2", card2.CardID);
             cmd.Parameters.AddWithValue("@playerID", playerID);
 
-            using SqlDataReader reader = ExecuteSQLConnection(sqlConnection, cmd);
+            int rows = ExecuteNonQuery(sqlConnection, cmd);
+            if (rows != 1)
+            {
+                // Hantera fel, t.ex. kasta ett undantag eller logga
+                throw new Exception("Failed to execute the SQL command");
+            }
         }
 
 
@@ -363,7 +406,12 @@ namespace MEMORY.Models
             //sets the parameters for the SQL command
             cmd.Parameters.AddWithValue("@index", card.Index);
 
-            using SqlDataReader reader = ExecuteSQLConnection(sqlConnection, cmd);
+            int rows = ExecuteNonQuery(sqlConnection, cmd);
+            if (rows != 1)
+            {
+                // Hantera fel, t.ex. kasta ett undantag eller logga
+                throw new Exception("Failed to execute the SQL command");
+            }
         }
 
         /// <summary>
@@ -386,7 +434,12 @@ namespace MEMORY.Models
             cmd.Parameters.AddWithValue("@amountOfPairs", amountOfPairs);
             cmd.Parameters.AddWithValue("@gameID", gameID);
 
-            using SqlDataReader reader = ExecuteSQLConnection(sqlConnection, cmd);
+            int rows = ExecuteNonQuery(sqlConnection, cmd);
+            if (rows != 1)
+            {
+                // Hantera fel, t.ex. kasta ett undantag eller logga
+                throw new Exception("Failed to execute the SQL command");
+            }
             return amountOfPairs;
         }
 
@@ -408,11 +461,105 @@ namespace MEMORY.Models
             //sets the parameters for the SQL command
             cmd.Parameters.AddWithValue("@gameID", gameID);
             
-            using SqlDataReader reader = ExecuteSQLConnection(sqlConnection, cmd);
+            using SqlDataReader reader = ExecuteReader(sqlConnection, cmd);
             if (!reader.Read())
                 return amountOfPairs;
             amountOfPairs = (int)reader["AmountOfPairs"];
             return amountOfPairs;
+        }
+
+        public void EndOfRound(int gameID)
+        {
+            //reset card1 and card2 in Round table for the specific game
+            Round round = GetRoundFromGameID(gameID);
+
+            //SqlConnection sqlConnection = CreateSQLConnection();
+
+            //using SqlCommand cmd = new SqlCommand(
+            // @"UPDATE Round
+            // SET card1 = NULL, card2 = NULL
+            // WHERE RoundID = @roundID", sqlConnection);
+
+            ////sets the parameters for the SQL command
+            //cmd.Parameters.AddWithValue("@roundID", round.RoundID);
+
+            //using SqlDataReader reader = ExecuteSQLConnection(sqlConnection, cmd);
+
+            //check if AmountOfPairs == total pairs in the game -> set GameState to Finished
+            if (GetAmountOfPairs(gameID) == 9)
+            {
+                EndGame(gameID);
+            } else
+            {
+                //create new round and insert it into the Round table
+                SqlConnection sqlConnection2 = CreateSQLConnection();
+
+                using SqlCommand cmd2 = new SqlCommand(
+                 @"INSERT INTO Round (GameID, card1, card2, WasItAMatch) 
+                 VALUES (@gameID, NULL, NULL, 0)", sqlConnection2);
+
+                //sets the parameters for the SQL command
+                cmd2.Parameters.AddWithValue("@gameID", gameID);
+
+                ExecuteNonQuery(sqlConnection2, cmd2);
+            }
+        }
+
+        private void EndGame(int gameID)
+        {
+            //set GameState to Finished in the Game table
+            SqlConnection sqlConnection = CreateSQLConnection();
+            using SqlCommand cmd = new SqlCommand(
+             @"UPDATE Game
+             SET State = @state
+             WHERE GameID = @gameID", sqlConnection);
+
+            //sets the parameters for the SQL command
+            cmd.Parameters.AddWithValue("@state", GameState.Finished);
+            cmd.Parameters.AddWithValue("@gameID", gameID);
+
+            ExecuteNonQuery(sqlConnection, cmd);
+
+            //determine winner and set Winner attribute in the Game table
+            //the player with the most matched cards wins
+            using SqlCommand cmd2 = new SqlCommand(
+             @"UPDATE Game
+             SET Winner = 
+             (SELECT TOP 1 PlayerMatchedTo 
+              FROM GameCard 
+              WHERE GameID = @gameID 
+              GROUP BY PlayerMatchedTo 
+              ORDER BY COUNT(*) DESC)
+             WHERE GameID = @gameID", sqlConnection);
+
+        }
+
+
+        /// <summary>
+        /// REtrieves the winner of the specified game by its gameID
+        /// </summary>
+        /// <param name="gameID">The ID of the current game</param>
+        /// <returns>The UserID of the winner</returns>
+        public int GetWinner(int gameID)
+        {
+            int winnerID = 0;
+
+            SqlConnection sqlConnection = CreateSQLConnection();
+
+            using SqlCommand cmd = new SqlCommand(
+             @"SELECT Winner FROM Game 
+             WHERE GameID = @gameID", sqlConnection);
+
+            //sets the parameters for the SQL command
+            cmd.Parameters.AddWithValue("@gameID", gameID);
+            using SqlDataReader reader = ExecuteReader(sqlConnection, cmd);
+
+            if (!reader.Read())
+                return winnerID;
+
+            winnerID = (int)reader["Winner"];
+
+            return winnerID;
         }
 
         /// <summary>
@@ -464,5 +611,19 @@ namespace MEMORY.Models
             }
             return reader;
         }
+
+        private SqlDataReader ExecuteReader(SqlConnection sqlConnection, SqlCommand sqlCommand)
+        {
+            sqlConnection.Open();
+            return sqlCommand.ExecuteReader(System.Data.CommandBehavior.CloseConnection);
+        }
+
+        private int ExecuteNonQuery(SqlConnection sqlConnection, SqlCommand sqlCommand)
+        {
+            sqlConnection.Open();
+            int rowsAffected = sqlCommand.ExecuteNonQuery();
+            sqlConnection.Close();
+            return rowsAffected;
+        }   
     }
 }

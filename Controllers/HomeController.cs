@@ -28,5 +28,15 @@ namespace MEMORY.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        public IActionResult CreateGame()
+        {
+            return RedirectToAction("Gamehej", "Game");
+        }
+
+        public IActionResult JoinGame()
+        {
+            return RedirectToAction("JoinGame", "Game");
+        }
     }
 }

@@ -1,9 +1,30 @@
 ﻿
 
-@model List<Card>
+
+
+
+
+@* <p>@ViewBag.noofCards</p> *@
+@* 
+@{
+    ViewData["Title"] = "Game Page";
+} *@
+
+@* @model MEMORY.Models.Game@{
+ViewData["Title"] = "Game Page";
+}
+<h1>Memory</h1>
+<!--Hämta kod för spelet och lägg in-->
+<p>Koden för spelet:</p>
+<h1>@Model.RoomCode</h1>
+
+<p>Spelare 2: @(Model.Player2?.ToString() ?? "Väntar på spelare")</p>
+<p>Vinnare: @(Model.Winner?.ToString() ?? "Inte avgjort ännu")</p>
+
+@model LIST<MEMORY.Models.Card>;
 <p> Number of cards </p>
 <ul>
-    @foreach (Card card in Model)
+    @foreach (Card card in Model.)
     {
         if(card.IsFlipped)
         {
@@ -15,10 +36,45 @@
             @Html.ActionLink(card.Index.ToString(), "SelectCard", new { gameID = card.GameID, index = card.Index })
         }
     }
+</ul> *@
+
+
+@model MEMORY.Models.GameViewModel
+
+@{
+    ViewData["Title"] = "Game Page";
+}
+
+<h1>Memory</h1>
+
+<p>Koden för spelet:</p>
+<h1>@Model.Game.RoomCode</h1>
+
+<p>Spelare 2: @(Model.Game.Player2?.ToString() ?? "Väntar på spelare")</p>
+<p>Vinnare: @(Model.Game.Winner?.ToString() ?? "Inte avgjort ännu")</p>
+
+<p>Antal kort: @Model.Cards.Count</p>
+
+<ul>
+@foreach (Card card in Model.Cards)
+{
+    <li>
+    @if (card.IsFlipped)
+    {
+        <span>🂠 Flippat</span>
+    }
+    else
+    {
+        @Html.ActionLink(
+            card.Index.ToString(),
+            "SelectCard",
+            new { gameID = Model.Game.GameID, index = card.Index }
+        )
+    }
+    </li>
+}
 </ul>
 
-
-<p>@ViewBag.noofCards</p>
 
 <!-- generera interaktionspunkten(länkar, href) -->
 
@@ -27,4 +83,20 @@
     {
         ska inte gå att klicka på i <a href="#"></a>
     }
+-->
+
+<!--
+    if(GameState == "Finished")
+    {
+        DatabaseMethods.GetWinner
+        skriv ut vinnare för spelarna
+        byta till vy för slutet av spelet
+    }i)
+-->
+
+<!--
+    om ett spel är avslutat
+        visa vinnaren för båda spelarna
+        gärna som en pop-up på vyn
+        ha en knapp för att länka till vyn för startsidan
 -->

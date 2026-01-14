@@ -1,8 +1,40 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    var user = Context.Session.GetObject<User>("currentUser") ?? new User();
 }
 
+<!--
+    Det är denna vy som man kommer till efter att ha loggat in/skapat en användare
+-->
+
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
+    <h1 class="display-4">@user.UserName</h1>
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+@* <button asp-for="Hej" asp-controller="Game" "type="button" class="btn btn-secondary">Skapa spel</button> *@
+@* <button asp-for="JoinGame" asp-controller="Game" type="button" class="btn btn-secondary">Joina spel</button> *@
+
+
+<a asp-action="CreateGame"
+   asp-controller="Game"
+   class="btn btn-secondary">
+    Skapa spel
+</a>
+
+<form asp-action="JoinGame" method="post">
+    <input name="roomCode"
+           class="form-control"
+           placeholder="Ange spelkod" />
+    <button type="submit" class="btn btn-primary">
+        Joina spel
+    </button>
+</form>
+
+@* @Html.ActionLink(card.Index.ToString(), "SelectCard", new { gameID = card.GameID, index = card.Index }) *@
+
+
+<!--
+    Visa användarnamn på inloggad användare
+    Visa två knappar, en för att skapa ett spel och en för att joina
+-->

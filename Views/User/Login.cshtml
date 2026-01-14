@@ -1,0 +1,26 @@
+﻿@{
+    ViewData["Title"] = "Log in";
+}
+
+@model MEMORY.Models.User;
+<h1>Login Page</h1>
+
+<!--
+    Template from getbootstrap
+-->
+<form asp-action="Login" method="post">
+    <div class="mb-3">
+        <label asp-for="UserName" for ="exampleUserName" class="form-label">User name</label>
+        <input asp-for="UserName" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+        <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Passwords" for="exampleInputPassword1" class="form-label">Password</label>
+        <input asp-for="Passwords" type="password" class="form-control" id="exampleInputPassword1">
+    </div>
+    <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="exampleCheck1">
+        <label class="form-check-label" for="exampleCheck1">Check me out</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
