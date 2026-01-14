@@ -6,12 +6,16 @@
         //publika egenskaper
         public int RoundID { get; set; }
 
-        public Card? card1 { get; set; }
-        public Card? card2 { get; set; }
+        //public Card? card1 { get; set; }
+        //public Card? card2 { get; set; }
+
+        public int UserID { get; set; }
+        public int GameID { get; set; }
+
 
         //inte ha dessa!!!!!!!!!!
-        //public int CardID1 { get; set; }
-        //public int CardID2 { get; set; }
+        public int? IndexCard1 { get; set; }
+        public int? IndexCard2 { get; set; }
 
         public Boolean WasItAMatch { get; set; }
 
@@ -26,46 +30,46 @@
         {
             // Om Card1 inte är satt ännu,
             // då är detta första kortet
-            return card1 == null;
+            return IndexCard1 == null;
         }      
         
-        public void SetCard1(Card card)
+        public void SetCard1(int card)
         {
-            card1 = card;
+            IndexCard1 = card;
         }
 
-        public void SetCard2(Card card)
+        public void SetCard2(int card)
         {
-            card2 = card;
+            IndexCard2 = card;
         }
 
-        public bool IsItAMatch()
-        {
-            if (card1 == null || card2 == null)
-                return false;
+        //public bool IsItAMatch()
+        //{
+        //    if (CardID1 == null || CardID2 == null)
+        //        return false;
 
-            bool match = card1.CardName == card2.CardName;
+        //    bool match = CardID1.CardName == CardID2.CardName;
 
-            if (match)
-            {
-                //locks cards if a match
-                card1.IsMatched = true;
-                card2.IsMatched = true;
-                card1.IsFlipped = true;
-                card2.IsFlipped = true;
+        //    if (match)
+        //    {
+        //        //locks cards if a match
+        //        CardID1.IsMatched = true;
+        //        CardID2.IsMatched = true;
+        //        CardID1.IsFlipped = true;
+        //        CardID1.IsFlipped = true;
                 
-                //AmountOfPairs ++
-            }
-            else
-            {
-                //hides cards again if not a match
-                card1.IsFlipped = false;
-                card2.IsFlipped = false;
-                //Kan ha detta i Controllern istället?!
-                //SwitchPlayer();
-            }
-            return match;
-        }       
+        //        //AmountOfPairs ++
+        //    }
+        //    else
+        //    {
+        //        //hides cards again if not a match
+        //        CardID1.IsFlipped = false;
+        //        CardID2.IsFlipped = false;
+        //        //Kan ha detta i Controllern istället?!
+        //        //SwitchPlayer();
+        //    }
+        //    return match;
+        //}       
 
         //public Card GetCard1()
         //{
@@ -78,11 +82,11 @@
         //}
 
         //When done with the round, reset the stored cards
-        public void ResetRound()
-        {
-            card1 = null;
-            card2 = null;
-        }
+        //public void ResetRound()
+        //{
+        //    CardID1 = null;
+        //    CardID2 = null;
+        //}
 
         //metod för att kolla om det är en match
         //tar in två kortnamn och returnerar true eller false

@@ -76,6 +76,30 @@ namespace MEMORY.Models
             }
         }
 
+        public List<Card> GetCardsFromCardLibrary()
+        {
+            List<Card> cards = new List<Card>();
+
+            SqlConnection sqlConnection = CreateSQLConnection();
+
+            //hämta kort från CardLibrary
+            using SqlCommand cmd = new SqlCommand(
+                @"SELECT * FROM CardLibrary", sqlConnection);
+
+            using SqlDataReader reader = ExecuteReader(sqlConnection, cmd);
+            
+            while (reader.Read())
+            {
+                Card card = new Card();
+                card.CardID = (int)reader["CardID"];
+                card.CardName = reader["CardName"].ToString();
+
+                cards.Add(card);
+            }
+
+            return cards;
+        }
+
 
         /// <summary>
         /// Inserts a list of cards into the database for a specific game
@@ -85,21 +109,24 @@ namespace MEMORY.Models
         public void InsertCardList(List<Card> cards, int gameID)
         {
             //fixa i databas så allt stämmer överens!!!!
-            foreach (var card in cards)
+            foreach (Card card in cards)
             {
                 SqlConnection sqlConnection = CreateSQLConnection();
 
                 using SqlCommand cmd = new SqlCommand(
                  @"INSERT INTO GameCard
-      (CardName, [Index], IsMatched)
+      (GameID, CardID, CardName, IsMatched, IsFlipped, PlayerMatchedTo)
       VALUES
-      (@cardName, @index, @isMatched)",
+      (@gameID, @cardID, @cardName, @isMatched, @isFlipped, @playerMatchedTo)",
                  sqlConnection);
 
                 cmd.Parameters.AddWithValue("@gameID", gameID);
+                cmd.Parameters.AddWithValue("@cardID", card.CardID);
                 cmd.Parameters.AddWithValue("@cardName", card.CardName);
-                cmd.Parameters.AddWithValue("@index", card.Index);
+                //cmd.Parameters.AddWithValue("@index", card.Index);
                 cmd.Parameters.AddWithValue("@isMatched", card.IsMatched);
+                cmd.Parameters.AddWithValue("@isFlipped", card.IsFlipped);
+                cmd.Parameters.Add("@playerMatchedTo", SqlDbType.Int).Value = (object)card.PlayerMatchedTo ?? DBNull.Value;
 
                 int rows = ExecuteNonQuery(sqlConnection, cmd);
                 if (rows != 1)
@@ -208,6 +235,63 @@ namespace MEMORY.Models
             return selectedCard;
         }
 
+        //public Boolean DetermineIfMatch(int cardID1, int cardID2, int gameID)
+        //{
+        //    Card card1 = GetCardByID(cardID1);
+        //    Card card2 = GetCardByID(cardID2);
+        //    Game game = GetGameFromGameID(gameID);
+        //    int? playerID = game.CurrentPlayer;
+
+        //    if (card1.CardName == card2.CardName)
+        //    {
+        //        IncreaseAmountOfPairs(gameID);
+        //        LockMatchedCards(card1, card2, playerID);
+        //    }
+        //    else
+        //    {
+        //        HideCardsAgain(card1, card2);
+        //        SwitchPlayer(game);
+        //    }
+        //}
+
+        public Boolean DetermineMatch(int indexCard1, int indexCard2, int gameID)
+        {
+            Card card1 = GetCardByIndex(indexCard1);
+            Card card2 = GetCardByIndex(indexCard2);
+            return card1.CardName == card2.CardName;
+        }
+
+        public Card GetCardByIndex(int cardIndex)
+        {
+            Card card = new Card();
+            SqlConnection sqlConnection = CreateSQLConnection();
+
+            //fixa i databas så allt stämmer överens!!!!
+            using SqlCommand cmd = new SqlCommand(
+             @"SELECT * FROM GameCard 
+             WHERE Index = @index", sqlConnection);
+
+            //sets the parameters for the SQL command
+            cmd.Parameters.AddWithValue("@index", cardIndex);
+
+            using SqlDataReader reader = ExecuteReader(sqlConnection, cmd);
+            if (!reader.Read())
+                return card;
+
+            //fylla game objektet med data från databasen
+            card.CardID = (int)reader["CardID"];
+            card.CardName = reader["CardName"].ToString();
+            card.Index = (int)reader["Index"];
+            card.IsMatched = (bool)reader["IsMatched"];
+            card.IsFlipped = (bool)reader["IsFlipped"];
+            //card.PlayerMatchedTo = reader["PlayerMatchedTo"] as int?;
+            card.PlayerMatchedTo = reader["PlayerMatchedTo"] == DBNull.Value ? (int?)null : Convert.ToInt32(reader["PlayerMatchedTo"]);
+
+
+            //returns the retrieved carddetails
+            return card;
+        }
+
         /// <summary>
         /// Gets a specific game from the database by its gameID
         /// </summary>
@@ -235,10 +319,12 @@ namespace MEMORY.Models
             game.GameID = (int)reader["GameID"];
             game.CreatedWhen = (DateTime)reader["CreatedWhen"];
             game.Player1 = (int)reader["Player1"];
-            game.Player2 = (int)reader["Player2"];
+            game.Player2 = reader["Player2"] as int?;
             game.CurrentPlayer = (int)reader["CurrentPlayer"];
             game.RoomCode = reader["RoomCode"].ToString();
-            game.State = (GameState)reader["State"];
+            //game.State = (GameState)reader["State"];
+            game.State = (GameState)Enum.Parse(typeof(GameState), reader["State"].ToString());
+
             game.AmountOfPairs = (int)reader["AmountOfPairs"];
             game.Winner = reader["Winner"] as int?;
 
@@ -273,8 +359,8 @@ namespace MEMORY.Models
                 return round;
 
             round.RoundID = (int)reader["RoundID"];
-            round.card1 = (Card?)reader["card1"];
-            round.card2 = (Card?)reader["card2"];
+            round.IndexCard1 = (int?)reader["IndexCard1"];
+            round.IndexCard2 = (int?)reader["IndexCard2"];
             round.WasItAMatch = (bool)reader["WasItAMatch"];
 
             //returns the retrieved rounddetails
@@ -491,18 +577,36 @@ namespace MEMORY.Models
                 EndGame(gameID);
             } else
             {
-                //create new round and insert it into the Round table
-                SqlConnection sqlConnection2 = CreateSQLConnection();
+                CreateAndInsertNewRound(gameID);
+            }
+        }
 
-                using SqlCommand cmd2 = new SqlCommand(
-                 @"INSERT INTO Round (GameID, card1, card2, WasItAMatch) 
+        public void CreateAndInsertNewRound(int gameID)
+        {
+            //create new round and insert it into the Round table
+            SqlConnection sqlConnection2 = CreateSQLConnection();
+
+            using SqlCommand cmd2 = new SqlCommand(
+             @"INSERT INTO Round (GameID, IndexCard1, IndexCard2, WasItAMatch) 
                  VALUES (@gameID, NULL, NULL, 0)", sqlConnection2);
 
-                //sets the parameters for the SQL command
-                cmd2.Parameters.AddWithValue("@gameID", gameID);
+            //sets the parameters for the SQL command
+            cmd2.Parameters.AddWithValue("@gameID", gameID);
 
-                ExecuteNonQuery(sqlConnection2, cmd2);
-            }
+            ExecuteNonQuery(sqlConnection2, cmd2);
+        }
+
+        public void InsertCard1IntoRound(int gameID, Card card1)
+        {
+            SqlConnection sqlConnection = CreateSQLConnection();
+            using SqlCommand cmd = new SqlCommand(
+                @"INSERT INTO Round (GameID, IndexCard1, WasItAMatch ) 
+                VALUES (@gameID, @indexCard1, 0)", sqlConnection);
+
+            cmd.Parameters.AddWithValue("@gameID", gameID);
+            cmd.Parameters.AddWithValue("@indexCard1", card1.Index);
+
+            ExecuteNonQuery (sqlConnection, cmd);
         }
 
         private void EndGame(int gameID)

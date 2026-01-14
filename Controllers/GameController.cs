@@ -8,7 +8,7 @@ namespace MEMORY.Controllers
 {
     public class GameController : Controller
     {
-        public IActionResult Game()
+        public IActionResult Gamehej()
         {
             return RedirectToAction("CreateGame");
         }
@@ -32,8 +32,12 @@ namespace MEMORY.Controllers
               
         public IActionResult CreateGame ()
         {
+            DatabaseMethods dbm = new DatabaseMethods();
+
             Game game = new Game();
+            
             //Round round = new Round();
+            
 
             //slumpa fram rumid
             game.RoomCode = GenerateRoomCode();
@@ -45,20 +49,22 @@ namespace MEMORY.Controllers
             game.CurrentPlayer = game.Player1; //börja med spelare 1
             game.State = GameState.Pending;
 
-            //skapa alla kort
 
+            //skapa alla kort
+            List <Card> cards = dbm.GetCardsFromCardLibrary();
+
+            List<Card> allcards = new List<Card>();
             //duplicera korten för att få par
-            List<Card> cards = new List<Card>();
             for(int i = 0; i < cards.Count; i++)
             {
-                cards.Add(new Card(cards[i]));
+                allcards.Add(new Card(cards[i]));
+                allcards.Add(new Card(cards[i]));
             }
 
             //slumpa kortens positioner
-            cards = cards.OrderBy(cards => Random.Shared.Next()).ToList();
+            allcards = allcards.OrderBy(allcards => Random.Shared.Next()).ToList();
 
             //spara spelet i databasen
-            DatabaseMethods dbm = new DatabaseMethods();
             //dbm.InsertGame(game);
 
             //spara korten i databasen
@@ -66,9 +72,17 @@ namespace MEMORY.Controllers
 
             dbm.InsertGame(game); // sparar spelet
 
-            Game gameId = dbm.GetGameFromRoomCode(game.RoomCode);
+            string hej = game.RoomCode;
 
-            dbm.InsertCardList(cards, game.GameID);
+            Game gamehej = dbm.GetGameFromRoomCode(hej);
+
+            int id = gamehej.GameID;
+
+            dbm.CreateAndInsertNewRound(id);
+
+            //Game gameId = dbm.GetGameFromRoomCode(game.RoomCode);
+
+            dbm.InsertCardList(allcards, dbm.GetGameFromRoomCode(game.RoomCode).GameID);
 
             return RedirectToAction("Game", new { roomCode = game.RoomCode });
 
@@ -105,11 +119,16 @@ namespace MEMORY.Controllers
             return View();
         }
 
-        [HttpPost]
+        [HttpGet]
         public IActionResult SelectCard(int gameID, int index)
         {
             DatabaseMethods dbm = new DatabaseMethods();
             Card selectedCard = dbm.SelectCard(gameID, index);
+
+            //dbm.InsertSelectedCardIntoRound(selectedCard);
+
+            dbm.InsertCard1IntoRound(gameID, selectedCard);
+
             string roomCode = dbm.GetGameFromGameID(gameID).RoomCode;
 
             Round round = dbm.GetRoundFromGameID(gameID);
@@ -119,39 +138,13 @@ namespace MEMORY.Controllers
 
             if (round.IsFirstCard())
             {
-                round.SetCard1(selectedCard);
+                round.SetCard1(selectedCard.Index);
             }
             else
             {
-                round.SetCard2(selectedCard);
-                if (round.IsItAMatch())
-                {
-                    //Hantera match
+                round.SetCard2(selectedCard.Index);
 
-                    //amount of pairs ++
-                    dbm.IncreaseAmountOfPairs(gameID);
-
-                    //låser korten face up
-                    //matcha de två korten till player1 eller player2 (extra attribut i GameCard)
-
-                    dbm.LockMatchedCards(round.card1, round.card2, (int)dbm.GetGameFromGameID(gameID).CurrentPlayer);
-                    
-                    //behöv detta?
-                    ViewBag.Message = "It's a match!";
-
-                }
-                else
-                {
-                    // Hantera icke-match
-                    //döljer korten igen (hide)
-                    dbm.HideCardsAgain(round.card1, round.card2);
-
-                    //byter spelare (SwitchPlayer)
-                    dbm.SwitchPlayer(dbm.GetGameFromGameID(gameID));
-
-                    //behövs detta?
-                    ViewBag.Message = "Not a match. Next player's turn.";
-                }
+                dbm.DetermineMatch((int)round.IndexCard1, (int)round.IndexCard2, gameID);
 
                 dbm.EndOfRound(gameID);
                 //end of round
