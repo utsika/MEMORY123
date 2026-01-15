@@ -51,9 +51,9 @@ namespace MEMORY.Models
             //lägg in alla attribut till Game!!!
             using SqlCommand cmd = new SqlCommand(
              @"INSERT INTO Game
-      (CreatedWhen, Player1, Player2, CurrentPlayer, RoomCode, State, AmountOfPairs, Winner)
-      VALUES
-      (@createdWhen, @player1, @player2, @currentPlayer, @roomCode, @state, @amountOfPairs, @winner)",
+             (CreatedWhen, Player1, Player2, CurrentPlayer, RoomCode, State, AmountOfPairs, Winner)
+             VALUES
+             (@createdWhen, @player1, @player2, @currentPlayer, @roomCode, @state, @amountOfPairs, @winner)",
              sqlConnection);
 
             //sets the parameters for the SQL command
@@ -115,9 +115,9 @@ namespace MEMORY.Models
 
                 using SqlCommand cmd = new SqlCommand(
                  @"INSERT INTO GameCard
-      (GameID, CardID, CardName, IsMatched, IsFlipped, PlayerMatchedTo)
-      VALUES
-      (@gameID, @cardID, @cardName, @isMatched, @isFlipped, @playerMatchedTo)",
+                (GameID, CardID, CardName, IsMatched, IsFlipped, PlayerMatchedTo)
+                VALUES
+                (@gameID, @cardID, @cardName, @isMatched, @isFlipped, @playerMatchedTo)",
                  sqlConnection);
 
                 cmd.Parameters.AddWithValue("@gameID", gameID);
@@ -269,7 +269,7 @@ namespace MEMORY.Models
             //fixa i databas så allt stämmer överens!!!!
             using SqlCommand cmd = new SqlCommand(
              @"SELECT * FROM GameCard 
-             WHERE Index = @index", sqlConnection);
+             WHERE [Index] = @index", sqlConnection);
 
             //sets the parameters for the SQL command
             cmd.Parameters.AddWithValue("@index", cardIndex);
@@ -359,8 +359,8 @@ namespace MEMORY.Models
                 return round;
 
             round.RoundID = (int)reader["RoundID"];
-            round.IndexCard1 = (int?)reader["IndexCard1"];
-            round.IndexCard2 = (int?)reader["IndexCard2"];
+            round.IndexCard1 = reader["IndexCard1"] as int?;
+            round.IndexCard2 = reader["IndexCard2"] as int?;
             round.WasItAMatch = (bool)reader["WasItAMatch"];
 
             //returns the retrieved rounddetails
@@ -480,17 +480,17 @@ namespace MEMORY.Models
         /// Flips a selected card face up
         /// </summary>
         /// <param name="card">The selected card</param>
-        public void FlipCard(Card card)
+        public void FlipCard(int cardIndex)
         {
             SqlConnection sqlConnection = CreateSQLConnection();
 
             using SqlCommand cmd = new SqlCommand(
              @"UPDATE GameCard
              SET IsFlipped = 1
-             WHERE Index = @index", sqlConnection);
+             WHERE [Index] = @index", sqlConnection);
 
             //sets the parameters for the SQL command
-            cmd.Parameters.AddWithValue("@index", card.Index);
+            cmd.Parameters.AddWithValue("@index", cardIndex);
 
             int rows = ExecuteNonQuery(sqlConnection, cmd);
             if (rows != 1)
@@ -599,9 +599,16 @@ namespace MEMORY.Models
         public void InsertCard1IntoRound(int gameID, Card card1)
         {
             SqlConnection sqlConnection = CreateSQLConnection();
+
             using SqlCommand cmd = new SqlCommand(
-                @"INSERT INTO Round (GameID, IndexCard1, WasItAMatch ) 
-                VALUES (@gameID, @indexCard1, 0)", sqlConnection);
+             @"UPDATE Round
+            SET IndexCard1 = @indexCard1
+            WHERE RoundID = (
+            SELECT TOP 1 RoundID
+            FROM Round
+            WHERE GameID = @gameID
+            ORDER BY RoundID DESC
+            )", sqlConnection);
 
             cmd.Parameters.AddWithValue("@gameID", gameID);
             cmd.Parameters.AddWithValue("@indexCard1", card1.Index);

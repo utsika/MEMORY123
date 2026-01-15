@@ -80,6 +80,9 @@ namespace MEMORY.Controllers
 
             dbm.CreateAndInsertNewRound(id);
 
+            //Måste ändra status från Pending till InProgress när en andra spelare joinat
+            //GameState state = GameState.InProgress;
+
             //Game gameId = dbm.GetGameFromRoomCode(game.RoomCode);
 
             dbm.InsertCardList(allcards, dbm.GetGameFromRoomCode(game.RoomCode).GameID);
@@ -133,8 +136,10 @@ namespace MEMORY.Controllers
 
             Round round = dbm.GetRoundFromGameID(gameID);
 
+            int cardIndex = selectedCard.Index;
+
             //flippar kortet
-            dbm.FlipCard(selectedCard);
+            dbm.FlipCard(index);
 
             if (round.IsFirstCard())
             {
