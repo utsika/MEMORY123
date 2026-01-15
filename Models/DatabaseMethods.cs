@@ -475,19 +475,51 @@ namespace MEMORY.Models
             using SqlCommand cmd = new SqlCommand(
              @"UPDATE GameCard
              SET IsMatched = 1, PlayerMatchedTo = @playerID
-             WHERE CardID = @cardID1 OR CardID = @cardID2", sqlConnection);
+             WHERE [Index] = @cardIndex1 AND [Index] = @cardIndex2", sqlConnection);
 
             //sets the parameters for the SQL command
-            cmd.Parameters.AddWithValue("@cardID1", card1.CardID);
-            cmd.Parameters.AddWithValue("@cardID2", card2.CardID);
+            cmd.Parameters.AddWithValue("@cardIndex1", card1.Index);
+            cmd.Parameters.AddWithValue("@cardIndex2", card2.Index);
             cmd.Parameters.AddWithValue("@playerID", playerID);
 
             int rows = ExecuteNonQuery(sqlConnection, cmd);
-            if (rows != 1)
+            if (rows != 2)
             {
                 // Hantera fel, t.ex. kasta ett undantag eller logga
                 throw new Exception("Failed to execute the SQL command");
             }
+        }
+
+        public void SetCard1 (int cardIndex, int gameID)
+        {
+            SqlConnection sqlConnection = CreateSQLConnection();
+
+            using SqlCommand cmd = new SqlCommand(
+            @"UPDATE Round
+            SET IndexCard1 = @cardIndex1
+            WHERE GameID = @gameID", sqlConnection);
+
+            cmd.Parameters.AddWithValue("@cardIndex1", cardIndex);
+            cmd.Parameters.AddWithValue("@gameID", gameID);
+
+            int rows = ExecuteNonQuery(sqlConnection, cmd);
+           
+        }
+
+        public void SetCard2(int cardIndex, int gameID)
+        {
+            SqlConnection sqlConnection = CreateSQLConnection();
+
+            using SqlCommand cmd = new SqlCommand(
+            @"UPDATE Round
+            SET IndexCard2 = @cardIndex2
+            WHERE GameID = @gameID", sqlConnection);
+
+            cmd.Parameters.AddWithValue("@cardIndex2", cardIndex);
+            cmd.Parameters.AddWithValue("@gameID", gameID);
+
+            int rows = ExecuteNonQuery(sqlConnection, cmd);
+
         }
 
 

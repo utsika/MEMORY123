@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace MEMORY.Controllers
@@ -134,9 +135,7 @@ namespace MEMORY.Controllers
 			{
 				dbm.UpdateGameState(gameID, GameState.InProgress);
 			}
-			
-			
-
+						
             //dbm.InsertSelectedCardIntoRound(selectedCard);
 
             dbm.InsertCard1IntoRound(gameID, selectedCard);
@@ -150,22 +149,34 @@ namespace MEMORY.Controllers
             //flippar kortet
             dbm.FlipCard(index);
 
-            if (round.IsFirstCard())
+            if (round.IndexCard1 == 0)
             {
-                round.SetCard1(selectedCard.Index);
+                dbm.SetCard1(selectedCard.Index, gameID);
             }
             else
             {
-                round.SetCard2(selectedCard.Index);
+                dbm.SetCard2(selectedCard.Index, gameID);
 
-                dbm.DetermineMatch((int)round.IndexCard1, (int)round.IndexCard2, gameID);
+                //dbm.DetermineMatch((int)round.IndexCard1, (int)round.IndexCard2, gameID);
 
-                dbm.EndOfRound(gameID);
-                //end of round
-                //amropar round.ResetRound(); i EndOfRound i databasmetoder
-                //if AmountOfPairs == totalpairs -> EndOFGame (bl.a game.state = finished, jämföra vinnare, skriv ut vinnaren, radera korten från GameCard för dtr gameId)
-                //om AmountOfPairs < totalpairs -> ny runda
+
+                if (dbm.GetCardByIndex((int)round.IndexCard1).CardName == dbm.GetCardByIndex((int)round.IndexCard2).CardName)
+                {
+                    dbm.IncreaseAmountOfPairs(gameID);
+
+                    dbm.LockMatchedCards(dbm.GetCardByIndex((int)round.IndexCard1), dbm.GetCardByIndex((int)round.IndexCard2), gameID);
+                    dbm.EndOfRound(gameID);
+                }
+                else
+                {
+                    dbm.HideCardsAgain(dbm.GetCardByIndex((int)round.IndexCard1), dbm.GetCardByIndex((int)round.IndexCard2));
+
+                    dbm.EndOfRound(gameID);
+                }
             }
+            
+            
+
             if (dbm.GetGameFromGameID(gameID).State == GameState.InProgress)
             {
                 return RedirectToAction("Game", new { roomCode = dbm.GetGameFromRoomCode(roomCode).RoomCode });
@@ -175,6 +186,8 @@ namespace MEMORY.Controllers
                 return RedirectToAction("GameOver", new { roomCode = dbm.GetGameFromRoomCode(roomCode).RoomCode, winnerID = winnerID });
             }
         }
+
+        
 
         private string GenerateRoomCode()
         {
