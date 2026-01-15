@@ -235,6 +235,21 @@ namespace MEMORY.Models
             return selectedCard;
         }
 
+		public void UpdateGameState(int gameID, Enum GameState){
+			SqlConnection sqlConnection = CreateSQLConnection();
+			using SqlCommand cmd = new SqlCommand(
+			 @"UPDATE Game
+			 SET State = @state
+			 WHERE GameID = @gameID", sqlConnection);
+
+			//sets the parameters for the SQL command
+			cmd.Parameters.AddWithValue("@state", GameState);
+			cmd.Parameters.AddWithValue("@gameID", gameID);
+
+			ExecuteNonQuery(sqlConnection, cmd);
+			
+		}
+
         //public Boolean DetermineIfMatch(int cardID1, int cardID2, int gameID)
         //{
         //    Card card1 = GetCardByID(cardID1);

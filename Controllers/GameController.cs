@@ -127,6 +127,15 @@ namespace MEMORY.Controllers
         {
             DatabaseMethods dbm = new DatabaseMethods();
             Card selectedCard = dbm.SelectCard(gameID, index);
+			Game game = dbm.GetGameFromGameID(gameID);
+
+			//Change game state to InProgress if it's Pending and a second player has joined
+			if (game.State == GameState.Pending )//&& game.Player2 != null)
+			{
+				dbm.UpdateGameState(gameID, GameState.InProgress);
+			}
+			
+			
 
             //dbm.InsertSelectedCardIntoRound(selectedCard);
 
@@ -157,7 +166,7 @@ namespace MEMORY.Controllers
                 //if AmountOfPairs == totalpairs -> EndOFGame (bl.a game.state = finished, jämföra vinnare, skriv ut vinnaren, radera korten från GameCard för dtr gameId)
                 //om AmountOfPairs < totalpairs -> ny runda
             }
-            if ((dbm.GetGameFromGameID(gameID).State == GameState.InProgress))
+            if (dbm.GetGameFromGameID(gameID).State == GameState.InProgress)
             {
                 return RedirectToAction("Game", new { roomCode = dbm.GetGameFromRoomCode(roomCode).RoomCode });
             } else
