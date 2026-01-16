@@ -22,14 +22,29 @@
     Skapa spel
 </a>
 
-<form asp-action="JoinGame" method="post">
+<form asp-action="JoinGame" asp-controller="Game" method="post">
+    <div class="skrivfalt">
     <input name="roomCode"
            class="form-control"
            placeholder="Ange spelkod" />
+    </div>
     <button type="submit" class="btn btn-primary">
         Joina spel
     </button>
 </form>
+
+<style>
+    .skrivfalt{
+        max-width: 20vw;
+    }
+
+</style>
+
+
+
+
+
+
 
 @* @Html.ActionLink(card.Index.ToString(), "SelectCard", new { gameID = card.GameID, index = card.Index }) *@
 

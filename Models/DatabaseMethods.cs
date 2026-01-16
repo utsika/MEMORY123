@@ -100,6 +100,19 @@ namespace MEMORY.Models
             return cards;
         }
 
+        public void SetPlayer2 (int gameID, int playerID)
+        {
+            using SqlConnection sqlConnection = CreateSQLConnection();
+            using SqlCommand cmd = new SqlCommand(
+                @"UPDATE Game
+              SET Player2 = @player2
+              WHERE GameID = @gameId", sqlConnection);
+
+            cmd.Parameters.AddWithValue("@player2", playerID);
+            cmd.Parameters.AddWithValue("@gameId", gameID);
+
+            ExecuteNonQuery(sqlConnection, cmd);
+        }
 
         /// <summary>
         /// Inserts a list of cards into the database for a specific game

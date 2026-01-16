@@ -15,7 +15,7 @@ namespace MEMORY.Controllers
 			return RedirectToAction("CreateGame");
 		}
 
-		[HttpGet]
+		[HttpPost]
 		public IActionResult JoinGame(string roomCode)
 		{
 			//Console.WriteLine("ROOMCODE FROM FORM: " + roomCode);
@@ -25,12 +25,32 @@ namespace MEMORY.Controllers
 
 			DatabaseMethods dbm = new DatabaseMethods();
 			Game game = dbm.GetGameFromRoomCode(roomCode);
+			User currentUser = HttpContext.Session.GetObject<User>("currentUser");
+			if (currentUser == null)
+				return RedirectToAction("Login", "User");
+
 
 			if (game == null)
-				return NotFound($"Game with room code '{roomCode}' not found.");
+				return NotFound($"Spelet med koden '{roomCode}' finns inte.");
 
-			return RedirectToAction("Game", new { roomCode });
-		}
+			if (game.Player2 != null)
+			{ 
+				ModelState.AddModelError("", "Spelet har redan två spelare");
+				return RedirectToAction("Index", "Home");
+			}
+
+            if (game.Player1 == currentUser.UserID)
+            {
+				ModelState.AddModelError("", "Du är redan spelare 1");
+				return RedirectToAction("Game", new { roomCode });
+			}
+
+			dbm.SetPlayer2(game.GameID, currentUser.UserID);
+			dbm.UpdateGameState(game.GameID, GameState.InProgress);
+
+            return RedirectToAction("Game", new { roomCode });
+
+        }
 
 		public IActionResult CreateGame()
 		{

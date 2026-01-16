@@ -23,7 +23,7 @@ namespace MEMORY.Models
             {
                 return new User
                 {
-                    ID = (int)reader["UserID"],
+                    UserID = (int)reader["UserID"],
                     UserName = reader["UserName"].ToString()
                 };
             }

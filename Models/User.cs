@@ -5,7 +5,7 @@ namespace MEMORY.Models
     public class User
     {
         //publika egenskaper
-        public int ID { get; set; }
+        public int UserID { get; set; }
 
         [Required(ErrorMessage = "Du måste skriva in ett användarnamn")]
         public string UserName { get; set; }

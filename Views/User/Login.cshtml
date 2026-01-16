@@ -27,10 +27,11 @@
 
     @model MEMORY.Models.User
 
+    <div class="box">
     <form asp-action="Login" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-        <div class="mb-3">
+        <div class="anvandarLosen">
             <label asp-for="UserName" class="form-label">Användarnamn</label>
             <input asp-for="UserName" class="form-control"  />
         <span asp-validation-for="UserName" class="text-danger"></span>
@@ -38,20 +39,34 @@
             
         </div>
 
-        <div class="mb-3">
+        <div class="anvandarLosen">
             <label asp-for="Passwords" class="form-label">Lösenord</label>
             <input asp-for="Passwords" type="password" class="form-control" />
         <span asp-validation-for="Passwords" class="text-danger"></span>
 
         </div>
 
-        <button type="submit" class="btn btn-primary">Logga in
+        <button type="submit" class="btn btn-primary btn-lg btn-block w-100">
+            Logga in
         </button>
 
 
         <a asp-controller="User"
            asp-action="Signup"
-           class="btn btn-secondary ms-2">
+           class="btn btn-primary btn-lg  d-block w-100">
             Skapa konto
         </a>
     </form>
+</div>
+    
+    <style>
+        .box{
+            max-width:30vw;
+        }
+        
+        .anvandarLosen{
+            font-family: monospace;
+        }
+
+
+    </style>
