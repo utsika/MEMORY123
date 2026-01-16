@@ -9,7 +9,8 @@
 <h1>Koden för spelet: @Model.Game.RoomCode</h1>	
 
 
-<p>Spelare 2: @(Model.Game.Player2?.ToString() ?? "Väntar på spelare")</p>
+<p>@(Model.Game.Player2 != null ? "Spelare 2: " + Model.Game.Player2.ToString() : "Väntar på spelare")</p>
+
 
 <div class="card-grid">
 @foreach (Card card in Model.Cards)
