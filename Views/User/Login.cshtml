@@ -2,7 +2,7 @@
     ViewData["Title"] = "Log in";
 }
 
-@model MEMORY.Models.User;
+@* @model MEMORY.Models.User;
 <h1>Login Page</h1>
 
 <!--
@@ -10,7 +10,7 @@
 -->
 <form asp-action="Login" method="post">
     <div class="mb-3">
-        <label asp-for="UserName" for ="exampleUserName" class="form-label">User name</label>
+        <label asp-for="UserName" for ="exampleUserName" class="form-label">UserName</label>
         <input asp-for="UserName" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
         <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
     </div>
@@ -23,4 +23,20 @@
         <label class="form-check-label" for="exampleCheck1">Check me out</label>
     </div>
     <button type="submit" class="btn btn-primary">Submit</button>
+</form> *@
+
+@model MEMORY.Models.User
+
+<form asp-action="Login" method="post">
+    <div class="mb-3">
+        <label asp-for="UserName" class="form-label"></label>
+        <input asp-for="UserName" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Passwords" class="form-label"></label>
+        <input asp-for="Passwords" type="password" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Log in</button>
 </form>
