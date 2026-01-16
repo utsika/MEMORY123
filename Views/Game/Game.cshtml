@@ -71,6 +71,13 @@ ViewData["Title"] = "Game Page";
             new { gameID = Model.Game.GameID, index = card.Index }
         )
     }
+
+    @if (card.IsMatched)
+    {
+        <span style="color: mediumslateblue; font-weight: bold; margin-left: 8px;">
+        ✔ Match!
+        </span>
+    }
     </li>
 }
 </ul>

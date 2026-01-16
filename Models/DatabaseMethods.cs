@@ -302,7 +302,6 @@ namespace MEMORY.Models
             //card.PlayerMatchedTo = reader["PlayerMatchedTo"] as int?;
             card.PlayerMatchedTo = reader["PlayerMatchedTo"] == DBNull.Value ? (int?)null : Convert.ToInt32(reader["PlayerMatchedTo"]);
 
-
             //returns the retrieved carddetails
             return card;
         }
@@ -442,25 +441,25 @@ namespace MEMORY.Models
         /// </summary>
         /// <param name="card1">The first selected card</param>
         /// <param name="card2">The second selected card</param>
-        public void HideCardsAgain(Card card1, Card card2)
+        public void HideCardsAgain(int cardIndex1, int cardIndex2)
         {
             SqlConnection sqlConnection = CreateSQLConnection();
 
             using SqlCommand cmd = new SqlCommand(
              @"UPDATE GameCard
              SET IsFlipped = 0
-             WHERE CardID = @cardID1 OR CardID = @cardID2", sqlConnection);
+             WHERE [Index] = @cardIndex1 OR [Index] = @cardIndex2", sqlConnection);
 
             //sets the parameters for the SQL command
-            cmd.Parameters.AddWithValue("@cardID1", card1.CardID);
-            cmd.Parameters.AddWithValue("@cardID2", card2.CardID);
+            cmd.Parameters.AddWithValue("@cardIndex1", cardIndex1);
+            cmd.Parameters.AddWithValue("@cardIndex2", cardIndex2);
 
             int rows = ExecuteNonQuery(sqlConnection, cmd);
-            if (rows != 1)
-            {
-                // Hantera fel, t.ex. kasta ett undantag eller logga
-                throw new Exception("Failed to execute the SQL command");
-            }
+            //if (rows != 1)
+            //{
+            //    // Hantera fel, t.ex. kasta ett undantag eller logga
+            //    throw new Exception("Failed to execute the SQL command");
+            //}
         }
 
         /// <summary>
@@ -469,17 +468,17 @@ namespace MEMORY.Models
         /// <param name="card1">The first selected card</param>
         /// <param name="card2">The second selected card</param>
         /// <param name="playerID">The player who made the match</param>
-        public void LockMatchedCards(Card card1, Card card2, int playerID)
+        public void LockMatchedCards(int cardIndex1, int cardIndex2, int playerID)
         {
             SqlConnection sqlConnection = CreateSQLConnection();
             using SqlCommand cmd = new SqlCommand(
              @"UPDATE GameCard
              SET IsMatched = 1, PlayerMatchedTo = @playerID
-             WHERE [Index] = @cardIndex1 AND [Index] = @cardIndex2", sqlConnection);
+             WHERE [Index] = @cardIndex1 OR [Index] = @cardIndex2", sqlConnection);
 
             //sets the parameters for the SQL command
-            cmd.Parameters.AddWithValue("@cardIndex1", card1.Index);
-            cmd.Parameters.AddWithValue("@cardIndex2", card2.Index);
+            cmd.Parameters.AddWithValue("@cardIndex1", cardIndex1);
+            cmd.Parameters.AddWithValue("@cardIndex2", cardIndex2);
             cmd.Parameters.AddWithValue("@playerID", playerID);
 
             int rows = ExecuteNonQuery(sqlConnection, cmd);
@@ -643,7 +642,7 @@ namespace MEMORY.Models
             ExecuteNonQuery(sqlConnection2, cmd2);
         }
 
-        public void InsertCard1IntoRound(int gameID, Card card1)
+        public void InsertCard1IntoRound(int gameID, int index)
         {
             SqlConnection sqlConnection = CreateSQLConnection();
 
@@ -658,9 +657,29 @@ namespace MEMORY.Models
             )", sqlConnection);
 
             cmd.Parameters.AddWithValue("@gameID", gameID);
-            cmd.Parameters.AddWithValue("@indexCard1", card1.Index);
+            cmd.Parameters.AddWithValue("@indexCard1", index);
 
             ExecuteNonQuery (sqlConnection, cmd);
+        }
+
+        public void InsertCard2IntoRound(int gameID, int index)
+        {
+            SqlConnection sqlConnection = CreateSQLConnection();
+
+            using SqlCommand cmd = new SqlCommand(
+             @"UPDATE Round
+            SET IndexCard2 = @indexCard2
+            WHERE RoundID = (
+            SELECT TOP 1 RoundID
+            FROM Round
+            WHERE GameID = @gameID
+            ORDER BY RoundID DESC
+            )", sqlConnection);
+
+            cmd.Parameters.AddWithValue("@gameID", gameID);
+            cmd.Parameters.AddWithValue("@indexCard2", index);
+
+            ExecuteNonQuery(sqlConnection, cmd);
         }
 
         private void EndGame(int gameID)

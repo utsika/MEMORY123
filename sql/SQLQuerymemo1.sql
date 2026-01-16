@@ -48,3 +48,6 @@ ADD [Player1] int not null,
 	[RoomCode] varchar(10) not null,
 	[Winner] int null,
 	[AmountOfPairs] int not null;
+
+
+DELETE FROM Game;

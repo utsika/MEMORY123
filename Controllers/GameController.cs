@@ -105,6 +105,35 @@ namespace MEMORY.Controllers
 
             List<Card> cards = dbm.GetCardsFromGameID(game.GameID);
 
+            Round round = dbm.GetRoundFromGameID(game.GameID);
+
+            if (round.IndexCard1 != null && round.IndexCard2 != null)
+            {
+
+                //Round roundWithTwoCards = dbm.GetRoundFromGameID(game.GameID);
+
+                bool isMatch = dbm.DetermineMatch((int)round.IndexCard1, (int)round.IndexCard2, game.GameID);
+
+                if (isMatch)
+                {
+                    dbm.IncreaseAmountOfPairs(game.GameID);
+                    dbm.LockMatchedCards(
+                        (int)round.IndexCard1,
+                        (int)round.IndexCard2,
+                        game.GameID
+                    );
+                }
+                else
+                {
+                    dbm.HideCardsAgain(
+                        (int)round.IndexCard1,
+                        (int)round.IndexCard2
+                    );
+                }
+
+                dbm.EndOfRound(game.GameID);
+            }
+
             GameViewModel viewModel = new GameViewModel
             {
                 Game = game,
@@ -138,7 +167,7 @@ namespace MEMORY.Controllers
 						
             //dbm.InsertSelectedCardIntoRound(selectedCard);
 
-            dbm.InsertCard1IntoRound(gameID, selectedCard);
+            
 
             string roomCode = dbm.GetGameFromGameID(gameID).RoomCode;
 
@@ -149,33 +178,41 @@ namespace MEMORY.Controllers
             //flippar kortet
             dbm.FlipCard(index);
 
-            if (round.IndexCard1 == 0)
+
+
+            if (round.IndexCard1 == null)
             {
-                dbm.SetCard1(selectedCard.Index, gameID);
+                dbm.InsertCard1IntoRound(gameID, index);
+                //return RedirectToAction("Game", new { roomCode = dbm.GetGameFromGameID(gameID).RoomCode });
+
             }
             else
             {
-                dbm.SetCard2(selectedCard.Index, gameID);
+                dbm.InsertCard2IntoRound(gameID, index);
 
-                //dbm.DetermineMatch((int)round.IndexCard1, (int)round.IndexCard2, gameID);
+                //return RedirectToAction("Game", new { roomCode = dbm.GetGameFromGameID(gameID).RoomCode });
 
+                //Round roundWithTwoCards = dbm.GetRoundFromGameID(gameID);
 
-                if (dbm.GetCardByIndex((int)round.IndexCard1).CardName == dbm.GetCardByIndex((int)round.IndexCard2).CardName)
-                {
-                    dbm.IncreaseAmountOfPairs(gameID);
-
-                    dbm.LockMatchedCards(dbm.GetCardByIndex((int)round.IndexCard1), dbm.GetCardByIndex((int)round.IndexCard2), gameID);
-                    dbm.EndOfRound(gameID);
-                }
-                else
-                {
-                    dbm.HideCardsAgain(dbm.GetCardByIndex((int)round.IndexCard1), dbm.GetCardByIndex((int)round.IndexCard2));
-
-                    dbm.EndOfRound(gameID);
-                }
+                //dbm.FlipCard((int)roundWithTwoCards.IndexCard2);
             }
-            
-            
+            //Round roundWithTwoCards = dbm.GetRoundFromGameID(gameID);
+
+            //bool isMatch = dbm.DetermineMatch((int)roundWithTwoCards.IndexCard1, (int)roundWithTwoCards.IndexCard2, gameID);
+
+            //if (isMatch)
+            //{
+            //    dbm.IncreaseAmountOfPairs(gameID);
+
+            //    dbm.LockMatchedCards((int)roundWithTwoCards.IndexCard1, (int)roundWithTwoCards.IndexCard2, gameID);
+            //    dbm.EndOfRound(gameID);
+            //}
+            //else
+            //{
+            //    dbm.HideCardsAgain((int)roundWithTwoCards.IndexCard1, (int)roundWithTwoCards.IndexCard2);
+
+            //    dbm.EndOfRound(gameID);
+            //}
 
             if (dbm.GetGameFromGameID(gameID).State == GameState.InProgress)
             {
