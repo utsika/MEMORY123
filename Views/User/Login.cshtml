@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Log in";
+    ViewData["Title"] = "Logga in";
 }
 
 @* @model MEMORY.Models.User;
@@ -25,18 +25,33 @@
     <button type="submit" class="btn btn-primary">Submit</button>
 </form> *@
 
-@model MEMORY.Models.User
+    @model MEMORY.Models.User
 
-<form asp-action="Login" method="post">
-    <div class="mb-3">
-        <label asp-for="UserName" class="form-label"></label>
-        <input asp-for="UserName" class="form-control" />
-    </div>
+    <form asp-action="Login" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="mb-3">
-        <label asp-for="Passwords" class="form-label"></label>
-        <input asp-for="Passwords" type="password" class="form-control" />
-    </div>
+        <div class="mb-3">
+            <label asp-for="UserName" class="form-label">Användarnamn</label>
+            <input asp-for="UserName" class="form-control"  />
+        <span asp-validation-for="UserName" class="text-danger"></span>
 
-    <button type="submit" class="btn btn-primary">Log in</button>
-</form>
+            
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Passwords" class="form-label">Lösenord</label>
+            <input asp-for="Passwords" type="password" class="form-control" />
+        <span asp-validation-for="Passwords" class="text-danger"></span>
+
+        </div>
+
+        <button type="submit" class="btn btn-primary">Logga in
+        </button>
+
+
+        <a asp-controller="User"
+           asp-action="Signup"
+           class="btn btn-secondary ms-2">
+            Skapa konto
+        </a>
+    </form>

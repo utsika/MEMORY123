@@ -20,10 +20,50 @@ namespace MEMORY.Controllers
         [HttpPost]
         public IActionResult Login(User user)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(user);
+            }
+
+            UserDatabaseMethods dbm = new UserDatabaseMethods();
+            User loggedInUser = dbm.GetUserByUsernameAndPassword(user.UserName, user.Passwords);
+
+            if (loggedInUser == null)
+            {
+                ModelState.AddModelError("", "Fel användarnamn eller lösenord");
+                return View(user);
+            }
+
+            HttpContext.Session.SetObject("currentUser", loggedInUser);
+
+            return RedirectToAction("Index", "Home");
+
+        }
+
+        [HttpGet]
+        public IActionResult Signup()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Signup(User user)
+        {
+            if (!ModelState.IsValid)
+                return View(user);
+
+            UserDatabaseMethods dbm = new UserDatabaseMethods();
+            dbm.InsertUser(user);
+
             HttpContext.Session.SetObject("currentUser", user);
 
-            //ändra sedan till startsidan när vi har en sådan
             return RedirectToAction("Index", "Home");
+        }
+
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Remove("currentUser");
+            return RedirectToAction("Login");
         }
     }
 }

@@ -11,7 +11,7 @@ builder.Services.AddSession(options =>
 {
     //Set a short timeout for easy testing.
     //Change later to 60 minutes or so
-    options.IdleTimeout = TimeSpan.FromSeconds(5);
+    options.IdleTimeout = TimeSpan.FromMinutes(60);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });

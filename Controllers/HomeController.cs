@@ -15,7 +15,14 @@ namespace MEMORY.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            var user = HttpContext.Session.GetObject<User>("currentUser");
+
+            if (user == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
+
+            return View(user);
         }
 
         public IActionResult Privacy()
