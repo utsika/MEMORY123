@@ -11,6 +11,17 @@
 
 <p>@(Model.Game.Player2 != null ? "Spelare 2: " + Model.Game.Player2.ToString() : "Väntar på spelare")</p>
 
+<p>
+    Tur:
+    @if (Model.Game.CurrentPlayer == Model.Game.Player1)
+    {
+        <span style="color: blue; font-weight: bold;">Spelare 1</span>
+    }
+    else
+    {
+        <span style="color: red; font-weight: bold;">Spelare 2</span>
+    }
+</p>
 
 <div class="card-grid">
 @foreach (Card card in Model.Cards)

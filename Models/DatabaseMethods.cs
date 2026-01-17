@@ -100,6 +100,20 @@ namespace MEMORY.Models
             return cards;
         }
 
+        public void SetPlayer1(int gameID, int playerID)
+        {
+            using SqlConnection sqlConnection = CreateSQLConnection();
+            using SqlCommand cmd = new SqlCommand(
+                @"UPDATE Game
+              SET Player1 = @player1
+              WHERE GameID = @gameId", sqlConnection);
+
+            cmd.Parameters.AddWithValue("@player1", playerID);
+            cmd.Parameters.AddWithValue("@gameId", gameID);
+
+            ExecuteNonQuery(sqlConnection, cmd);
+        }
+
         public void SetPlayer2 (int gameID, int playerID)
         {
             using SqlConnection sqlConnection = CreateSQLConnection();
@@ -112,6 +126,19 @@ namespace MEMORY.Models
             cmd.Parameters.AddWithValue("@gameId", gameID);
 
             ExecuteNonQuery(sqlConnection, cmd);
+        }
+
+        public void UpdateCurrentPlayer(int gameID, int playerID)
+        {
+            using var conn = CreateSQLConnection();
+            using var cmd = new SqlCommand(
+                "UPDATE Game SET CurrentPlayer = @player WHERE GameID = @id",
+                conn);
+
+            cmd.Parameters.AddWithValue("@player", playerID);
+            cmd.Parameters.AddWithValue("@id", gameID);
+
+            ExecuteNonQuery(conn, cmd);
         }
 
         /// <summary>

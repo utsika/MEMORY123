@@ -52,27 +52,21 @@ namespace MEMORY.Controllers
 
         }
 
+		
+
 		public IActionResult CreateGame()
 		{
 			DatabaseMethods dbm = new DatabaseMethods();
 
 			Game game = new Game();
 
-			//Round round = new Round();
-			/* User currentUser = HttpContext.Session.GetObject<User>("currentUser");
-
-			if (currentUser == null)
-			{
-				return RedirectToAction("Login", "User");
-			}
-
-			int userId = currentUser.ID; */
-
+            User player1 = HttpContext.Session.GetObject<User>("currentUser");          
+			
 			//slumpa fram rumid
-			game.RoomCode = GenerateRoomCode();
+            game.RoomCode = GenerateRoomCode();
 
 			game.AmountOfPairs = 0;
-			game.Player1 = 0;//dbm.GetUser(game) //när vi fixat inloggning, sätt till inloggad användare
+			game.Player1 = player1.UserID;
 			game.Player2 = null;
 			game.CreatedWhen = DateTime.Now;
 			game.CurrentPlayer = game.Player1; //börja med spelare 1
@@ -153,11 +147,12 @@ namespace MEMORY.Controllers
 				}
 				else
 				{
-					dbm.HideCardsAgain(
-						(int)round.IndexCard1,
-						(int)round.IndexCard2
-					);
-				}
+					dbm.HideCardsAgain((int)round.IndexCard1, (int)round.IndexCard2);
+                    
+                    int nextPlayer = game.CurrentPlayer == game.Player1 ? game.Player2.Value : game.Player1;
+
+                    dbm.UpdateCurrentPlayer(game.GameID, nextPlayer);
+                }
 
 				dbm.EndOfRound(game.GameID);
 			}
@@ -185,10 +180,22 @@ namespace MEMORY.Controllers
 		{
 			DatabaseMethods dbm = new DatabaseMethods();
 			Card selectedCard = dbm.SelectCard(gameID, index);
-			Game game = dbm.GetGameFromGameID(gameID);
 
-			//Change game state to InProgress if it's Pending and a second player has joined
-			if (game.State == GameState.Pending)//&& game.Player2 != null)
+            User currentUser = HttpContext.Session.GetObject<User>("currentUser");
+
+            if (currentUser == null)
+                return RedirectToAction("Login", "User");
+
+            Game game = dbm.GetGameFromGameID(gameID);
+
+			//Stops the user from playing if it isn't their turn
+            if (game.CurrentPlayer != currentUser.UserID)
+            {
+                return RedirectToAction("Game", new { roomCode = game.RoomCode });
+            }
+
+            //Change game state to InProgress if it's Pending and a second player has joined
+            if (game.State == GameState.Pending)//&& game.Player2 != null)
 			{
 				dbm.UpdateGameState(gameID, GameState.InProgress);
 			}
@@ -218,29 +225,15 @@ namespace MEMORY.Controllers
 			{
 				dbm.InsertCard2IntoRound(gameID, index);
 
+
+
 				//return RedirectToAction("Game", new { roomCode = dbm.GetGameFromGameID(gameID).RoomCode });
 
 				//Round roundWithTwoCards = dbm.GetRoundFromGameID(gameID);
 
 				//dbm.FlipCard((int)roundWithTwoCards.IndexCard2);
 			}
-			//Round roundWithTwoCards = dbm.GetRoundFromGameID(gameID);
-
-			//bool isMatch = dbm.DetermineMatch((int)roundWithTwoCards.IndexCard1, (int)roundWithTwoCards.IndexCard2, gameID);
-
-			//if (isMatch)
-			//{
-			//    dbm.IncreaseAmountOfPairs(gameID);
-
-			//    dbm.LockMatchedCards((int)roundWithTwoCards.IndexCard1, (int)roundWithTwoCards.IndexCard2, gameID);
-			//    dbm.EndOfRound(gameID);
-			//}
-			//else
-			//{
-			//    dbm.HideCardsAgain((int)roundWithTwoCards.IndexCard1, (int)roundWithTwoCards.IndexCard2);
-
-			//    dbm.EndOfRound(gameID);
-			//}
+			
 
 			if (dbm.GetGameFromGameID(gameID).State == GameState.InProgress)
 			{
