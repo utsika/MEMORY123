@@ -15,7 +15,7 @@ namespace MEMORY.Models
         //publika egenskaper
         public int GameID { get; set; }
         public DateTime CreatedWhen { get; set; }
-        public int? CurrentPlayer { get; set; }
+        public int CurrentPlayer { get; set; }
         public int Player1 { get; set; }
         public int? Player2 { get; set; }
         public int AmountOfPairs { get; set; }

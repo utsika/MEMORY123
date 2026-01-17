@@ -1,4 +1,8 @@
+using MEMORY.Hubs;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSignalR();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -40,5 +44,6 @@ app.MapControllerRoute(
     pattern: "{controller=User}/{action=Login}/{id?}")
     .WithStaticAssets();
 
+app.MapHub<GameHub>("/gameHub");
 
 app.Run();

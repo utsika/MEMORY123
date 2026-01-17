@@ -1,19 +1,31 @@
-﻿using MEMORY.Models;
+﻿using MEMORY.Hubs;
+using MEMORY.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
+
 namespace MEMORY.Controllers
 {
+
 	public class GameController : Controller
 	{
-		public IActionResult Gamehej()
-		{
 
-			return RedirectToAction("CreateGame");
-		}
+        private readonly IHubContext<GameHub> hubContext1;
+
+        public GameController(IHubContext<GameHub> hubContext)
+        {
+            hubContext1 = hubContext;
+        }
+
+  //      public IActionResult Gamehej()
+		//{
+
+		//	return RedirectToAction("CreateGame");
+		//}
 
 		[HttpPost]
 		public IActionResult JoinGame(string roomCode)
@@ -87,13 +99,8 @@ namespace MEMORY.Controllers
 			//slumpa kortens positioner
 			allcards = allcards.OrderBy(allcards => Random.Shared.Next()).ToList();
 
-			//spara spelet i databasen
-			//dbm.InsertGame(game);
-
-			//spara korten i databasen
-			//dbm.InsertCardList(cards, dbm.GetGameFromRoomCode(game.RoomCode).GameID);
-
-			dbm.InsertGame(game); // sparar spelet
+			//Saves the game in the database
+			dbm.InsertGame(game); 
 
 			string hej = game.RoomCode;
 
@@ -103,18 +110,11 @@ namespace MEMORY.Controllers
 
 			dbm.CreateAndInsertNewRound(id);
 
-			//Måste ändra status från Pending till InProgress när en andra spelare joinat
-			//GameState state = GameState.InProgress;
-
-			//Game gameId = dbm.GetGameFromRoomCode(game.RoomCode);
-
 			dbm.InsertCardList(allcards, dbm.GetGameFromRoomCode(game.RoomCode).GameID);
 
 			return RedirectToAction("Game", new { roomCode = game.RoomCode });
-
-			//redirecta till Game action
-			//return RedirectToAction("Game", new { roomCode = game.RoomCode }); // rätt syntax för route values
 		}
+
 		public IActionResult Game(string roomCode)
 		{
 			if (string.IsNullOrWhiteSpace(roomCode))
@@ -131,19 +131,12 @@ namespace MEMORY.Controllers
 
 			if (round.IndexCard1 != null && round.IndexCard2 != null)
 			{
-
-				//Round roundWithTwoCards = dbm.GetRoundFromGameID(game.GameID);
-
 				bool isMatch = dbm.DetermineMatch((int)round.IndexCard1, (int)round.IndexCard2, game.GameID);
 
 				if (isMatch)
 				{
 					dbm.IncreaseAmountOfPairs(game.GameID);
-					dbm.LockMatchedCards(
-						(int)round.IndexCard1,
-						(int)round.IndexCard2,
-						game.GameID
-					);
+					dbm.LockMatchedCards((int)round.IndexCard1, (int)round.IndexCard2, game.GameID);
 				}
 				else
 				{
@@ -156,6 +149,13 @@ namespace MEMORY.Controllers
 
 				dbm.EndOfRound(game.GameID);
 			}
+			int pairs = dbm.GetAmountOfPairs(game.GameID);
+
+			if (pairs == 9)
+			{
+				dbm.EndGame(game.GameID);
+				return RedirectToAction("GameOver", "Game");
+			}
 
 			GameViewModel viewModel = new GameViewModel
 			{
@@ -166,31 +166,36 @@ namespace MEMORY.Controllers
 			return View(viewModel);
 		}
 
-		public IActionResult GameOver(string roomCode, int gameID)
+		public IActionResult GameOver(string roomCode, int winnerID)
 		{
-			DatabaseMethods dbm = new DatabaseMethods();
-			Game game = dbm.GetGameFromRoomCode(roomCode);
-			int winner = dbm.GetWinner(gameID);
-			ViewBag.Winner = winner;
-			return View();
-		}
+			//DatabaseMethods dbm = new DatabaseMethods();
+			//Game game = dbm.GetGameFromRoomCode(roomCode);
+			//int winner = dbm.GetWinner(gameID);
+			//ViewBag.Winner = winner;
+			//return View();
+
+            ViewBag.RoomCode = roomCode; // Om du vill visa rums-koden i vyn
+            ViewBag.Winner = winnerID;   // Vinnarens userID eller namn, beroende på vad du vill visa
+
+            return View();
+        }
 
 		[HttpGet]
-		public IActionResult SelectCard(int gameID, int index)
-		{
-			DatabaseMethods dbm = new DatabaseMethods();
+        //public IActionResult SelectCard(int gameID, int index)
+        public async Task<IActionResult> SelectCard(int gameID, int index)
+
+        {
+            DatabaseMethods dbm = new DatabaseMethods();
 			Card selectedCard = dbm.SelectCard(gameID, index);
-
+            Game game = dbm.GetGameFromGameID(gameID);
+			   
             User currentUser = HttpContext.Session.GetObject<User>("currentUser");
-
             if (currentUser == null)
                 return RedirectToAction("Login", "User");
 
-            Game game = dbm.GetGameFromGameID(gameID);
-
-			//Stops the user from playing if it isn't their turn
             if (game.CurrentPlayer != currentUser.UserID)
             {
+                //Stops the user from playing if it isn't their turn
                 return RedirectToAction("Game", new { roomCode = game.RoomCode });
             }
 
@@ -202,8 +207,6 @@ namespace MEMORY.Controllers
 
 			//dbm.InsertSelectedCardIntoRound(selectedCard);
 
-
-
 			string roomCode = dbm.GetGameFromGameID(gameID).RoomCode;
 
 			Round round = dbm.GetRoundFromGameID(gameID);
@@ -214,24 +217,20 @@ namespace MEMORY.Controllers
 			dbm.FlipCard(index);
 
 
+            await hubContext1.Clients
+			.Group(roomCode)
+			.SendAsync("RefreshGame");
 
-			if (round.IndexCard1 == null)
+
+            if (round.IndexCard1 == null)
 			{
 				dbm.InsertCard1IntoRound(gameID, index);
-				//return RedirectToAction("Game", new { roomCode = dbm.GetGameFromGameID(gameID).RoomCode });
 
 			}
 			else
 			{
 				dbm.InsertCard2IntoRound(gameID, index);
 
-
-
-				//return RedirectToAction("Game", new { roomCode = dbm.GetGameFromGameID(gameID).RoomCode });
-
-				//Round roundWithTwoCards = dbm.GetRoundFromGameID(gameID);
-
-				//dbm.FlipCard((int)roundWithTwoCards.IndexCard2);
 			}
 			
 
@@ -245,7 +244,6 @@ namespace MEMORY.Controllers
 				return RedirectToAction("GameOver", new { roomCode = dbm.GetGameFromRoomCode(roomCode).RoomCode, winnerID = winnerID });
 			}
 		}
-
 
 
 		private string GenerateRoomCode()

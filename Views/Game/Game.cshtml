@@ -62,6 +62,20 @@
     </div>
 }
 </div>
+<script src="~/lib/signalr/signalr.js"></script>
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/gameHub")
+        .build();
+
+    connection.start().then(() => {
+        connection.invoke("JoinRoom", "@Model.Game.RoomCode");
+    });
+
+    connection.on("RefreshGame", () => {
+        location.reload();
+    });
+</script>
 
 <style>
 /* Brädan */
