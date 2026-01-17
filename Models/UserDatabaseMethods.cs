@@ -44,6 +44,18 @@ namespace MEMORY.Models
             ExecuteNonQuery(sqlConnection, cmd);
         }
 
+        public void DeleteUser(int userID)
+        {
+            SqlConnection sqlConnection = CreateSQLConnection();
+            using SqlCommand cmd = new SqlCommand(
+                @"DELETE FROM Users 
+                WHERE UserID = (@userID)", sqlConnection);
+
+            cmd.Parameters.AddWithValue("@userID", userID);
+
+            ExecuteNonQuery(sqlConnection, cmd);
+        }
+
         private SqlConnection CreateSQLConnection()
         {
             //Connection string to the database

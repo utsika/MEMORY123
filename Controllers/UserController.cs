@@ -65,5 +65,23 @@ namespace MEMORY.Controllers
             HttpContext.Session.Remove("currentUser");
             return RedirectToAction("Login");
         }
+
+        public IActionResult DeleteAccount()
+        {
+
+            var user = HttpContext.Session.GetObject<User>("currentUser");
+
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            UserDatabaseMethods dbm = new UserDatabaseMethods();
+            dbm.DeleteUser(user.UserID);
+
+            HttpContext.Session.Remove("currentUser");
+
+            return RedirectToAction("Login", "User");
+        }
     }
 }

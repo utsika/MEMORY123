@@ -33,6 +33,20 @@
     </button>
 </form>
 
+<a asp-action="Logout"
+   asp-controller="User"
+   class="btn btn-secondary"
+   onclick="return confirm('Är du säker på att du vill logga ut?');">
+    Logga ut
+</a>
+
+<a asp-action="DeleteAccount"
+   asp-controller="User"
+   class="btn btn-secondary"
+   onclick="return confirm('Är du säker på att du vill radera ditt konto?');">
+    Radera konto
+</a>
+
 <style>
     .skrivfalt{
         max-width: 20vw;
