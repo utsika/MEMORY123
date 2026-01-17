@@ -115,7 +115,7 @@ namespace MEMORY.Controllers
 			return RedirectToAction("Game", new { roomCode = game.RoomCode });
 		}
 
-		public IActionResult Game(string roomCode)
+        public async Task<IActionResult> Game(string roomCode)
 		{
 			if (string.IsNullOrWhiteSpace(roomCode))
 				return BadRequest("Missing room code.");
@@ -136,7 +136,7 @@ namespace MEMORY.Controllers
 				if (isMatch)
 				{
 					dbm.IncreaseAmountOfPairs(game.GameID);
-					dbm.LockMatchedCards((int)round.IndexCard1, (int)round.IndexCard2, game.GameID);
+					dbm.LockMatchedCards((int)round.IndexCard1, (int)round.IndexCard2, game.CurrentPlayer);
 				}
 				else
 				{
@@ -151,13 +151,25 @@ namespace MEMORY.Controllers
 			}
 			int pairs = dbm.GetAmountOfPairs(game.GameID);
 
-			if (pairs == 9)
-			{
-				dbm.EndGame(game.GameID);
-				return RedirectToAction("GameOver", "Game");
-			}
+			//if (pairs == 9)
+			//{
+			//	dbm.EndGame(game.GameID);
+   //             await hubContext1.Clients.Group(game.RoomCode).SendAsync("GameOver");
 
-			GameViewModel viewModel = new GameViewModel
+   //             return RedirectToAction("GameOver", "Game");
+			//}
+
+            if (pairs == 9)
+            {
+                dbm.EndGame(game.GameID);
+                if (game.CurrentPlayer == game.Winner)
+                    return RedirectToAction("GameOver", "Game");
+				else
+                    return RedirectToAction("GameOver", "Game"); // Samma vy för icke-vinnare, men visa t.ex. "Tyvärr, du förlorade"
+            }
+
+
+            GameViewModel viewModel = new GameViewModel
 			{
 				Game = game,
 				Cards = cards
@@ -168,16 +180,21 @@ namespace MEMORY.Controllers
 
 		public IActionResult GameOver(string roomCode, int winnerID)
 		{
-			//DatabaseMethods dbm = new DatabaseMethods();
-			//Game game = dbm.GetGameFromRoomCode(roomCode);
-			//int winner = dbm.GetWinner(gameID);
-			//ViewBag.Winner = winner;
-			//return View();
 
-            ViewBag.RoomCode = roomCode; // Om du vill visa rums-koden i vyn
-            ViewBag.Winner = winnerID;   // Vinnarens userID eller namn, beroende på vad du vill visa
+            DatabaseMethods dbm = new DatabaseMethods();
 
-            return View();
+            // Hämta vinnarnamn baserat på winnerID
+            string winnerName = dbm.GetUserByID(winnerID).UserName;
+
+            // Skicka en enkel ViewModel med vinnarnamn och roomCode
+            var model = new GameViewModel
+            {
+                WinnerName = winnerName,
+                Game = new Game { RoomCode = roomCode }  // För att kunna visa rummet
+            };
+
+            return View(model);
+
         }
 
 		[HttpGet]
@@ -241,9 +258,9 @@ namespace MEMORY.Controllers
 			else
 			{
 				int winnerID = dbm.GetWinner(gameID);
-				return RedirectToAction("GameOver", new { roomCode = dbm.GetGameFromRoomCode(roomCode).RoomCode, winnerID = winnerID });
-			}
-		}
+                return RedirectToAction("GameOver", new { roomCode = roomCode, winnerID = winnerID });
+            }
+        }
 
 
 		private string GenerateRoomCode()

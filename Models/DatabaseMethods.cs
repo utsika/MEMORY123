@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using MEMORY.Hubs;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Data;
@@ -8,6 +10,8 @@ namespace MEMORY.Models
 {
     public class DatabaseMethods
     {
+        
+
         public Card GetCardByIndex(int gameID, int index)
         {
             SqlConnection sqlConnection = CreateSQLConnection();
@@ -695,6 +699,7 @@ namespace MEMORY.Models
             cmd2.Parameters.AddWithValue("@gameID", gameID);
             ExecuteNonQuery(sqlConnection, cmd2);
 
+
         }
 
 
@@ -723,6 +728,32 @@ namespace MEMORY.Models
             winnerID = (int)reader["Winner"];
 
             return winnerID;
+        }
+
+        public User GetUserByID(int userID)
+        {
+            User user = new User();
+            using SqlConnection sqlConnection = CreateSQLConnection();
+
+            using SqlCommand cmd = new SqlCommand(
+                "SELECT * FROM Users WHERE UserID = @userID", sqlConnection);
+
+            cmd.Parameters.AddWithValue("@userID", userID);
+
+            sqlConnection.Open();
+            using SqlDataReader reader = cmd.ExecuteReader();
+
+            if (reader.Read())  // Viktigt! Kontrollera att det finns en rad.
+            {
+                user = new User();
+                user.UserID = (int)reader["UserID"];
+                user.UserName = reader["UserName"].ToString();
+                // Läs in andra properties om du har fler
+            }
+           
+
+            return user;
+
         }
 
         /// <summary>
