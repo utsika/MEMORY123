@@ -4,9 +4,9 @@
     ViewData["Title"] = "Game Page";
 }
 
-<h1>Memory Djur</h1>
+<h1>Memory</h1>
 
-<h1>Koden för spelet: @Model.Game.RoomCode</h1>	
+<h2>Koden för spelet: @Model.Game.RoomCode</h2>	
 
 
 <p>@(Model.Game.Player2 != null ? "Spelare 2: " + Model.Game.Player2.ToString() : "Väntar på spelare")</p>
@@ -118,6 +118,7 @@
     font-size: 1rem;
     transition: border-color 0.3s, transform 0.2s;
     cursor: pointer;
+    font-family: monospace;
 }
 
 .card:hover {
@@ -127,13 +128,18 @@
 .card-back {
 	width: 100%;
 	height: auto;
+    border-radius:6px;
 }
 
 /* Anpassa textelement */
 h1 {
 	text-align: center;
-	color: palevioletred;
 	font-family: monospace;
+}
+
+h2 {
+        text-align: center;
+        font-family: monospace;
 }
 
 p {
