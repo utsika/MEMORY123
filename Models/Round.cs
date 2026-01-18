@@ -20,7 +20,7 @@
         public Boolean WasItAMatch { get; set; }
 
         //GameID, UserID, CardID1, CardID2 foreign keys hur?????????????
-        
+
 
         /*
          * IsFirstCard() == true -> Card1

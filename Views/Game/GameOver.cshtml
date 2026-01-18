@@ -3,18 +3,49 @@
 @{
     ViewData["Title"] = "Spelet är slut!";
 }
+<div class="end-wrapper">
+    <div class="box">
+        <h1>Spelet är slut!</h1>
 
-<h1>Spelet är slut!</h1>
+        <p>Spelet är över.</p>
 
-<p>Spelet @* i rummet <strong>@Model.Game.RoomCode</strong> *@ är över.</p> @* Om ta bort blir variablerna rätt *@
+        @if (!string.IsNullOrEmpty(Model.WinnerName))
+        {
+            <p>Grattis till vinnaren: <strong>@Model.WinnerName</strong>!</p>
+        }
+        else
+        {
+            <p>Ingen vinnare kunde hittas.</p>
+        }
 
-@if (!string.IsNullOrEmpty(Model.WinnerName))
-{
-    <p>Grattis till vinnaren: <strong>@Model.WinnerName</strong>!</p>
-}
-else
-{
-    <p>Ingen vinnare kunde hittas.</p>
-}
+        <a class="back-link" href="@Url.Action("Index", "Home")">
+            Tillbaka till startsidan
+        </a>
+    </div>
+</div>
 
-<a href="@Url.Action("Index", "Home")">Tillbaka till startsidan</a>
+<style>
+    .end-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .box {
+        width: 30vw;
+        font-family: monospace;
+        text-align: center;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-top: 1.5rem;
+        color: #8E4B77;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+</style>
