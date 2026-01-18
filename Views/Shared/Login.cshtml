@@ -1,0 +1,164 @@
+﻿@{
+    ViewData["Title"] = "Logga in";
+}
+
+    @model MEMORY.Models.User
+
+    
+
+    <div class="loginpage">
+    
+    <div class="box">
+        <h1>Logga in</h1>
+    <form asp-action="Login" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="anvandarLosen">
+            <label asp-for="UserName" class="form-label">Användarnamn</label>
+            <input asp-for="UserName" class="form-control"  />
+        <span asp-validation-for="UserName" class="text-danger"></span>
+
+            
+        </div>
+
+        <div class="anvandarLosen">
+            <label asp-for="Passwords" class="form-label">Lösenord</label>
+            <input asp-for="Passwords" type="password" class="form-control" />
+        <span asp-validation-for="Passwords" class="text-danger"></span>
+
+        </div>
+
+        <button type="submit" class="btn-main btn-login">
+            Logga in
+        </button>
+
+        <div class="signup">
+        <a asp-controller="User"
+           asp-action="Signup"
+               class="btn-main btn-login">
+            Skapa konto
+        </a>
+        </div>
+        
+    </form>
+</div>
+</div>
+    
+    <style>
+
+    .container{
+        place-items:center;
+    }
+    .h1, h1{
+        text-align:center;
+    }
+    .box {
+        width: 30vw;
+        font-family: monospace;
+        align-items: center;
+    }
+
+    .btn-main {
+        width: 30vw;
+        padding: 0.6rem;
+        border-radius: 8px;
+        text-align: center;
+        font-family: monospace;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        display: inline-block;
+        text-decoration: none;
+        margin-top: 8px;
+        margin-bottom: 8px;
+    }
+
+    .btn-login {
+        background-color: #c789b3;
+        color: white;
+        border: none;
+    }
+
+        .btn-login:hover {
+            background-color: #8E4B77;
+        }
+
+    .btn-signup {
+        background-color: white;
+        color: #8E4B77;
+        border: 2px solid #8E4B77;
+    }
+
+        .btn-signup:hover {
+            background-color: #8E4B77;
+            color: white;
+        }
+
+    .anvandarLosen {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1rem;
+    }
+
+        /* .login{
+            border-radius: 8px;
+            width: 30vw;
+            background-color: #C789B3;
+            color: white;
+        } */
+        /* .login:hover{
+            background-color: #8E4B77;
+        } */
+        
+    /*     .signup{
+            width: 30vw;
+            border-radius: 8px;
+            background-color: white;
+        color: #8E4B77;
+        width: 30vw;
+        border-radius: 8px;
+        display: inline-block;
+        text-align: center;
+        padding: 0.5rem 1rem;
+        border: 2px solid #8E4B77;
+    } */
+
+        /* .hej{
+        text-decoration: none;
+        color: #8E4B77;
+        }
+
+        /* .hej:hover{
+            color:white;
+        }
+
+    .anvandarLosen {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1rem;
+    }
+
+        .signup:hover{
+            background-color: #8E4B77;
+            color:white;
+            z-index:1;        }
+
+        .btn-primary{
+        background-color: #bb79a5;
+        color: white;
+        /* border-color: #bb79a5; */
+        }
+
+        /* .signup:hover {
+        background-color: #008CBA;
+        color: white;
+        border-radius: 8px;
+        
+        } */
+
+        
+        /* .anvandarLosen{
+            font-family: monospace;
+        } */
+
+
+    </style>

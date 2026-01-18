@@ -204,11 +204,18 @@ namespace MEMORY.Controllers
         public async Task<IActionResult> SelectCard(int gameID, int index)
 
         {
+			
             DatabaseMethods dbm = new DatabaseMethods();
 			Card selectedCard = dbm.SelectCard(gameID, index);
             Game game = dbm.GetGameFromGameID(gameID);
 			   
             User currentUser = HttpContext.Session.GetObject<User>("currentUser");
+
+			if(game.State == GameState.Pending)
+			{
+				return RedirectToAction("Game", new { roomCode = game.RoomCode });
+			}
+
             if (currentUser == null)
                 return RedirectToAction("Login", "User");
 
@@ -218,11 +225,11 @@ namespace MEMORY.Controllers
                 return RedirectToAction("Game", new { roomCode = game.RoomCode });
             }
 
-            //Change game state to InProgress if it's Pending and a second player has joined
-            if (game.State == GameState.Pending)//&& game.Player2 != null)
-			{
-				dbm.UpdateGameState(gameID, GameState.InProgress);
-			}
+   //         //Change game state to InProgress if it's Pending and a second player has joined
+   //         if (game.State == GameState.Pending)//&& game.Player2 != null)
+			//{
+			//	dbm.UpdateGameState(gameID, GameState.InProgress);
+			//}
 
 			//dbm.InsertSelectedCardIntoRound(selectedCard);
 
