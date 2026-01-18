@@ -57,13 +57,13 @@ namespace MEMORY.Controllers
 			}
 
 			dbm.SetPlayer2(game.GameID, currentUser.UserID);
+
 			dbm.UpdateGameState(game.GameID, GameState.InProgress);
+
 
             return RedirectToAction("Game", new { roomCode });
 
         }
-
-		
 
 		public IActionResult CreateGame()
 		{
@@ -128,7 +128,13 @@ namespace MEMORY.Controllers
 
 			Round round = dbm.GetRoundFromGameID(game.GameID);
 
-			if (round.IndexCard1 != null && round.IndexCard2 != null)
+			//if(game.Player2 != null)
+			//{
+   //             SetPlayersName(game.Player1, (int)game.Player2);
+   //             Game game2 = dbm.GetGameFromGameID(game.GameID);
+   //         }
+
+            if (round.IndexCard1 != null && round.IndexCard2 != null)
 			{
 				bool isMatch = dbm.DetermineMatch((int)round.IndexCard1, (int)round.IndexCard2, game.GameID);
 
@@ -148,27 +154,17 @@ namespace MEMORY.Controllers
 
 				dbm.EndOfRound(game.GameID);
 			}
+
 			int pairs = dbm.GetAmountOfPairs(game.GameID);
 
-			//if (pairs == 9)
-			//{
-			//	dbm.EndGame(game.GameID);
-   //             await hubContext1.Clients.Group(game.RoomCode).SendAsync("GameOver");
-
-   //             return RedirectToAction("GameOver", "Game");
-			//}
 
             if (pairs == 9)
             {
                 dbm.EndGame(game.GameID);
 				Game endedGame = dbm.GetGameFromGameID(game.GameID);
-                /* if (game.CurrentPlayer == game.Winner)
-				{ */
-					
-                    return RedirectToAction("GameOver", new { winnerID = endedGame.Winner }); //måste skicka med det man behöver
-				/* }
-				else
-                    return RedirectToAction("GameOver", "Game");  */// Samma vy för icke-vinnare, men visa t.ex. "Tyvärr, du förlorade"
+                
+                return RedirectToAction("GameOver", new { winnerID = endedGame.Winner }); 
+				
             }
 
 
@@ -196,8 +192,21 @@ namespace MEMORY.Controllers
                 /* Game = new Game { RoomCode = roomCode } */  // För att kunna visa rummet
             };
             return View(model);
-
         }
+
+		//private void SetPlayersName(int player1ID, int player2ID)
+		//{
+		//	DatabaseMethods dbm = new DatabaseMethods();
+		//	string player1Name = dbm.GetUserByID(player1ID).UserName;
+		//	string player2Name = dbm.GetUserByID((int)player2ID).UserName;
+
+		//	var model = new GameViewModel
+		//	{
+		//		Player1Name = player1Name,
+		//		Player2Name = player2Name,
+		//	};
+
+		//}
 
 		[HttpGet]
         //public IActionResult SelectCard(int gameID, int index)
@@ -224,14 +233,6 @@ namespace MEMORY.Controllers
                 //Stops the user from playing if it isn't their turn
                 return RedirectToAction("Game", new { roomCode = game.RoomCode });
             }
-
-   //         //Change game state to InProgress if it's Pending and a second player has joined
-   //         if (game.State == GameState.Pending)//&& game.Player2 != null)
-			//{
-			//	dbm.UpdateGameState(gameID, GameState.InProgress);
-			//}
-
-			//dbm.InsertSelectedCardIntoRound(selectedCard);
 
 			string roomCode = dbm.GetGameFromGameID(gameID).RoomCode;
 

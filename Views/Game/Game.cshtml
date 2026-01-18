@@ -1,5 +1,6 @@
 ﻿@model MEMORY.Models.GameViewModel
 
+
 @{
     ViewData["Title"] = "Game Page";
 }
@@ -9,7 +10,18 @@
 <h2>Koden för spelet: @Model.Game.RoomCode</h2>	
 
 
-<p>@(Model.Game.Player2 != null ? "Spelare 2: " + Model.Game.Player2.ToString() : "Väntar på spelare")</p>
+@* <p>@(Model.Game.Player2 != null ? "Spelare 2: " + Model.Game.Player2.ToString() : "Väntar på spelare...")</p> *@
+
+<p>
+    @if (Model.Game.Player2 == null)
+    {
+        @:Väntar på spelare...
+    }
+    @* else
+    {
+        @($"{Model.Player1Name} är spelare 1 och {Model.Player2Name} är spelare 2")
+    } *@
+</p>
 
 <p>
     Tur:
@@ -128,7 +140,7 @@
 .card-back {
 	width: 100%;
 	height: auto;
-    border-radius:6px;
+    border-radius:4px;
 }
 
 /* Anpassa textelement */
