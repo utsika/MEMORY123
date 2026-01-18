@@ -30,7 +30,6 @@ namespace MEMORY.Controllers
 		[HttpPost]
 		public IActionResult JoinGame(string roomCode)
 		{
-			//Console.WriteLine("ROOMCODE FROM FORM: " + roomCode);
 
 			if (string.IsNullOrWhiteSpace(roomCode))
 				return BadRequest("Missing room code.");
@@ -162,10 +161,14 @@ namespace MEMORY.Controllers
             if (pairs == 9)
             {
                 dbm.EndGame(game.GameID);
-                if (game.CurrentPlayer == game.Winner)
-                    return RedirectToAction("GameOver", "Game");
+				Game endedGame = dbm.GetGameFromGameID(game.GameID);
+                /* if (game.CurrentPlayer == game.Winner)
+				{ */
+					
+                    return RedirectToAction("GameOver", new { winnerID = endedGame.Winner }); //måste skicka med det man behöver
+				/* }
 				else
-                    return RedirectToAction("GameOver", "Game"); // Samma vy för icke-vinnare, men visa t.ex. "Tyvärr, du förlorade"
+                    return RedirectToAction("GameOver", "Game");  */// Samma vy för icke-vinnare, men visa t.ex. "Tyvärr, du förlorade"
             }
 
 
@@ -178,7 +181,7 @@ namespace MEMORY.Controllers
 			return View(viewModel);
 		}
 
-		public IActionResult GameOver(string roomCode, int winnerID)
+		public IActionResult GameOver( int winnerID) 
 		{
 
             DatabaseMethods dbm = new DatabaseMethods();
@@ -190,9 +193,8 @@ namespace MEMORY.Controllers
             var model = new GameViewModel
             {
                 WinnerName = winnerName,
-                Game = new Game { RoomCode = roomCode }  // För att kunna visa rummet
+                /* Game = new Game { RoomCode = roomCode } */  // För att kunna visa rummet
             };
-
             return View(model);
 
         }

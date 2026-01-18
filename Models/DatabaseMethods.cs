@@ -730,7 +730,7 @@ namespace MEMORY.Models
             return winnerID;
         }
 
-        public User GetUserByID(int userID)
+        public User GetUserByID(int userID) //Funkar inte, sätter userID till 0
         {
             User user = new User();
             using SqlConnection sqlConnection = CreateSQLConnection();
@@ -748,10 +748,8 @@ namespace MEMORY.Models
                 user = new User();
                 user.UserID = (int)reader["UserID"];
                 user.UserName = reader["UserName"].ToString();
-                // Läs in andra properties om du har fler
             }
-           
-
+			
             return user;
 
         }

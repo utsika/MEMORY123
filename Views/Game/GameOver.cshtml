@@ -6,7 +6,7 @@
 
 <h1>Spelet är slut!</h1>
 
-<p>Spelet i rummet <strong>@Model.Game.RoomCode</strong> är över.</p>
+<p>Spelet @* i rummet <strong>@Model.Game.RoomCode</strong> *@ är över.</p> @* Om ta bort blir variablerna rätt *@
 
 @if (!string.IsNullOrEmpty(Model.WinnerName))
 {
