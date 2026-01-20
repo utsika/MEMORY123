@@ -20,13 +20,7 @@ namespace MEMORY.Controllers
         {
             hubContext1 = hubContext;
         }
-
-  //      public IActionResult Gamehej()
-		//{
-
-		//	return RedirectToAction("CreateGame");
-		//}
-
+		
 		[HttpPost]
 		public IActionResult JoinGame(string roomCode)
 		{
@@ -64,7 +58,7 @@ namespace MEMORY.Controllers
             return RedirectToAction("Game", new { roomCode });
 
         }
-
+		[HttpGet]
 		public IActionResult CreateGame()
 		{
 			DatabaseMethods dbm = new DatabaseMethods();
@@ -114,6 +108,7 @@ namespace MEMORY.Controllers
 			return RedirectToAction("Game", new { roomCode = game.RoomCode });
 		}
 
+
         public async Task<IActionResult> Game(string roomCode)
 		{
 			if (string.IsNullOrWhiteSpace(roomCode))
@@ -127,12 +122,6 @@ namespace MEMORY.Controllers
 			List<Card> cards = dbm.GetCardsFromGameID(game.GameID);
 
 			Round round = dbm.GetRoundFromGameID(game.GameID);
-
-			//if(game.Player2 != null)
-			//{
-   //             SetPlayersName(game.Player1, (int)game.Player2);
-   //             Game game2 = dbm.GetGameFromGameID(game.GameID);
-   //         }
 
             if (round.IndexCard1 != null && round.IndexCard2 != null)
 			{
@@ -157,16 +146,13 @@ namespace MEMORY.Controllers
 
 			int pairs = dbm.GetAmountOfPairs(game.GameID);
 
-
             if (pairs == 9)
             {
                 dbm.EndGame(game.GameID);
 				Game endedGame = dbm.GetGameFromGameID(game.GameID);
                 
-                return RedirectToAction("GameOver", new { winnerID = endedGame.Winner }); 
-				
+                return RedirectToAction("GameOver", new { winnerID = endedGame.Winner }); 	
             }
-
 
             GameViewModel viewModel = new GameViewModel
 			{
@@ -182,14 +168,13 @@ namespace MEMORY.Controllers
 
             DatabaseMethods dbm = new DatabaseMethods();
 
-            // Hämta vinnarnamn baserat på winnerID
+            // Get the name of the winner
             string winnerName = dbm.GetUserByID(winnerID).UserName;
 
-            // Skicka en enkel ViewModel med vinnarnamn och roomCode
+            // Send a view model with the name of the winner
             var model = new GameViewModel
             {
                 WinnerName = winnerName,
-                /* Game = new Game { RoomCode = roomCode } */  // För att kunna visa rummet
             };
             return View(model);
         }
@@ -209,12 +194,9 @@ namespace MEMORY.Controllers
 		//}
 
 		[HttpGet]
-        //public IActionResult SelectCard(int gameID, int index)
         public async Task<IActionResult> SelectCard(int gameID, int index)
-
         {
-			
-            DatabaseMethods dbm = new DatabaseMethods();
+			DatabaseMethods dbm = new DatabaseMethods();
 			Card selectedCard = dbm.SelectCard(gameID, index);
             Game game = dbm.GetGameFromGameID(gameID);
 			   
@@ -240,31 +222,25 @@ namespace MEMORY.Controllers
 
 			int cardIndex = selectedCard.Index;
 
-			//flippar kortet
 			dbm.FlipCard(index);
-
 
             await hubContext1.Clients
 			.Group(roomCode)
 			.SendAsync("RefreshGame");
 
-
             if (round.IndexCard1 == null)
 			{
 				dbm.InsertCard1IntoRound(gameID, index);
-
 			}
 			else
 			{
 				dbm.InsertCard2IntoRound(gameID, index);
-
 			}
 			
-
 			if (dbm.GetGameFromGameID(gameID).State == GameState.InProgress)
 			{
 				return RedirectToAction("Game", new { roomCode = dbm.GetGameFromRoomCode(roomCode).RoomCode });
-			}
+			}	
 			else
 			{
 				int winnerID = dbm.GetWinner(gameID);
